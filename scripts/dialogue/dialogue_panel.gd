@@ -14,6 +14,20 @@ func _ready() -> void:
 	$Panel/Close.text = tr("DIALOGUE_CLOSE")
 	$Panel/Next.pressed.connect(advance)
 	$Panel/Close.pressed.connect(close)
+	get_viewport().size_changed.connect(_layout)
+	_layout()
+
+
+func _layout() -> void:
+	var viewport_size := get_viewport_rect().size
+	$Panel.position = Vector2(20, viewport_size.y - 208)
+	$Panel.size = Vector2(viewport_size.x - 40, 168)
+	$Panel/Speaker.size.x = viewport_size.x - 80
+	$Panel/Line.size.x = viewport_size.x - 80
+	var half := (viewport_size.x - 100) / 2
+	$Panel/Next.size.x = half
+	$Panel/Close.position.x = half + 40
+	$Panel/Close.size.x = half
 
 
 func start(data: DialogueData) -> bool:

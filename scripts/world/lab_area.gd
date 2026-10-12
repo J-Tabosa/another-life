@@ -1,6 +1,7 @@
 extends Node2D
 
 @export var exterior: bool = false
+var map_size := Vector2(960, 640)
 var tile_size: int = 32
 var solids: Array[Rect2] = []
 var furniture: Array[Rect2] = []
@@ -44,6 +45,11 @@ func rebuild() -> void:
 	var portal_shape := RectangleShape2D.new()
 	portal_shape.size = Vector2(doorway_width, 64)
 	door_shape.shape = portal_shape
+	if not exterior:
+		$Bed.position = furniture[0].get_center()
+		var bed_shape := RectangleShape2D.new()
+		bed_shape.size = furniture[0].size + Vector2(80, 80)
+		$Bed/CollisionShape2D.shape = bed_shape
 	queue_redraw()
 
 

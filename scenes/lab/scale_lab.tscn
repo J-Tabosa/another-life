@@ -14,7 +14,20 @@ script = ExtResource("3")
 
 [node name="Player" parent="." instance=ExtResource("2")]
 
+[node name="SeasonFilter" type="CanvasLayer" parent="."]
+layer = 1
+
+[node name="Tint" type="ColorRect" parent="SeasonFilter"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0.55, 0.72, 0.09)
+
 [node name="HUD" type="CanvasLayer" parent="."]
+layer = 2
 
 [node name="Panel" type="ColorRect" parent="HUD"]
 offset_right = 960.0
@@ -28,6 +41,7 @@ offset_top = 12.0
 offset_right = 940.0
 offset_bottom = 94.0
 theme_override_font_sizes/font_size = 18
+autowrap_mode = 2
 
 [node name="ClockPanel" type="ColorRect" parent="HUD"]
 offset_top = 508.0
@@ -61,3 +75,13 @@ mouse_filter = 2
 theme_override_font_sizes/font_size = 16
 
 [node name="DialoguePanel" parent="HUD" instance=ExtResource("4")]
+
+[node name="DebugButton" type="Button" parent="HUD"]
+offset_right = 170.0
+offset_bottom = 34.0
+focus_mode = 0
+
+[node name="FullscreenButton" type="Button" parent="HUD"]
+offset_right = 150.0
+offset_bottom = 34.0
+focus_mode = 0

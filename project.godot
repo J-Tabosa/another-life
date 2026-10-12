@@ -8,19 +8,25 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="AnotherLife"
 run/main_scene="res://scenes/lab/scale_lab.tscn"
-config/features=PackedStringArray("4.5", "GL Compatibility")
+config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [display]
 
 window/size/viewport_width=960
 window/size/viewport_height=540
-window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/size/mode=3
+window/stretch/mode="disabled"
 
 [internationalization]
 
@@ -33,7 +39,6 @@ locale/fallback="pt_BR"
 
 [rendering]
 
-textures/default_filters/use_nearest_mipmap_filter=false
 textures/canvas_textures/default_texture_filter=0
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="gl_compatibility"

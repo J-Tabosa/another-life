@@ -1,50 +1,53 @@
 # Another Life / Outra Vida
 
-Protótipo em **Godot 4.5 / GDScript**, conforme o [GDD do Dia 0](docs/ANOTHER_LIFE_GDD_DIA0.md) e [AGENTS.md](AGENTS.md).
+Protótipo em **Godot 4.7 / GDScript**, validado na **4.7.2 oficial**, conforme o [GDD](docs/ANOTHER_LIFE_GDD_DIA0.md) e [AGENTS.md](AGENTS.md). Referências à 4.5 no GDD são históricas; veja a [verificação da migração](docs/godot_4_7_migration.md).
 
 ## Entrega atual
 
-**P1-06 — diálogo/interação mínimos**, sobre o TimeManager e o laboratório da primeira sessão técnica (seção 15 do GDD). Cena principal: `scenes/lab/scale_lab.tscn`.
+**P1-07 — sono, despertador e limite das 04h**, incluindo **P1-08 — salvamentos**, autorizada junto com os ajustes de exibição e laboratórios abaixo. Cena principal: `scenes/lab/scale_lab.tscn`.
 
-- Personagem placeholder: cada quadro tem 128×128 px, corpo com margem transparente e colisão nos pés.
-- Movimento em oito direções, diagonal normalizada e animação/idle em quatro direções.
-- Dois mapas separados, câmera de seguimento, paredes e mobília com colisão.
-- Porta interativa com destino e marcador de entrada; personagem preservado ao trocar de mapa.
-- Comparação de tiles 32/64, porta, cama, mesa e fachada; arte e disposição provisórias.
-- Labels em português por chaves traduzíveis. Inglês e espanhol entram antes da beta.
-- Relógio externo: 1 segundo real = 1 minuto do jogo; data/hora visíveis no rodapé, preservadas nas transições. A ativação natural é restrita à rua.
-- No quarto, o relógio natural congela enquanto o personagem continua andando. Sair preserva a fração de segundo anterior, sem descontar o tempo passado dentro.
-- Minutos absolutos e eventos por minuto; meia-noite, 30 dias/estação, 120 dias/ano e continuidade dos dias da semana. Sem férias/agendas nesta tarefa.
-- Atividade placeholder de 60 minutos, acionada por R ou pelo botão: avança exatamente uma hora mesmo no quarto, preservando a pausa natural. Duração e chave de texto vêm de `data/activities/lab_activity.tres`, um recurso `TimedAction` reutilizável.
-- `TimeManager.advance_minutes()` valida antes de avançar e emite os minutos/dias intermediários em ordem. A fração acumulada do tempo externo é preservada.
-- NPC quadrado placeholder no quarto e na rua: aproxime-se e pressione E. A conversa tem duas falas traduzíveis em `data/dialogues/lab_conversation.tres`; painel reutilizável, sem consumir tempo.
-- Durante diálogo, movimento, portas e atividade ficam bloqueados. Ao fechar, o tempo natural permanece parado no quarto e retoma na rua, preservando sua fração de segundo.
+- Personagem placeholder com quadro 128×128, corpo visível 40×56 e colisão nos pés; movimento em oito direções e animação/idle em quatro.
+- Tela cheia inicial, câmera com zoom 1 e stretch desativado: resolução maior mostra mais cenário, mantendo o tamanho em pixels. HUD e painéis acompanham a janela. Não há escalonamento automático para monitores de densidade muito alta.
+- Quarto, rua, percurso de 12.800×1.600 e pátio da Universidade Horizonte de 2.400×1.600, por transição. Edificações, mobília, NPCs e placas são placeholders. Tiles 32/64 para comparação.
+- Tempo externo: 1 segundo real = 1 minuto; interiores e diálogos congelam os ticks naturais. Atividade provisória de 60 minutos avança tempo explicitamente.
+- Calendário com 30 dias/estação, 120 dias/ano e dias da semana contínuos. Debug clicável para avançar data/hora e filtros: primavera rosa, verão azul, outono laranja, inverno branco claro. O filtro afeta o mundo; a interface permanece legível.
+- Cama interativa para sono voluntário, despertador com horas/minutos, opção de salvar antes de dormir e cancelamento do sono voluntário.
+- Às 04h o relógio natural para exatamente no limite, inclusive após um frame muito longo. Sono obrigatório não pode ser cancelado: fora retorna ao quarto e desperta às 12h do mesmo dia; em casa usa o próximo toque do despertador.
+- Salvamentos manual e automático separados; autosave desligado por padrão, habilitado no painel C. Dados inválidos são recusados antes de alterar a partida. Carregar o manual feito ao dormir retoma a escolha de sono anterior ao avanço do relógio.
+- Textos por chaves traduzíveis em pt_BR. Inglês/espanhol permanecem pendentes para a beta.
 
-**[PROPOSTA]** O teste começa na primavera 1, ano 1, às 06h. Segunda-feira é a origem provisória; `weekday_offset` do nó `TimeManager` permite escolher outra origem enquanto a decisão canônica está pendente.
+## Como rodar e testar manualmente
 
-**[PROPOSTA]** Enquanto P1-07 não implementa o sono, ações que terminariam às 04h ou depois são recusadas antes de começar. Por exemplo, às 03:30 a atividade de 60 minutos não avança o relógio. **[PENDENTE]** UX definitiva de interrupção/truncamento no limite das 04h.
+Importe `project.godot` na **Godot 4.7**, aguarde a importação e pressione **F5**. Para testar a resolução real da tela, use uma janela de jogo separada do editor; o painel de jogo embutido pode redimensionar sua prévia.
 
-## Como rodar
-
-1. Importe `project.godot` na **Godot 4.5**.
-2. Aguarde a importação dos recursos e pressione **F6** para executar a cena-laboratório ou **F5** para executar o projeto.
-3. Caminhe até a porta e pressione **E** para sair/entrar.
-4. Aproxime-se do quadrado azul à esquerda do jogador e pressione **E** para conversar. Use **E/Enter** ou o botão para continuar; **Esc** ou o botão para fechar.
-
-| Tecla | Ação |
+| Controle | Ação |
 |---|---|
 | WASD / setas | Caminhar |
-| E | Interagir com porta/NPC próximo; avançar diálogo |
-| Enter / Esc | Avançar / fechar diálogo |
-| T | Alternar tiles/objetos entre 32 e 64; reposiciona em ponto seguro |
-| F | Mostrar/ocultar quadro 128×128 e colisão dos pés |
-| R / botão de atividade | Avançar 60 minutos por uma atividade provisória |
+| E | Interagir com porta, NPC ou cama próximos |
+| E / Enter / Esc no diálogo | Avançar / avançar / fechar |
+| T | Comparar tiles 32/64, reposicionando em ponto seguro |
+| F | Mostrar/ocultar quadro 128×128 e colisão |
+| R / botão | Atividade provisória de 60 minutos |
+| C / botão | Calendário de debug, nome para testar persistência, autosave e carregar cada slot |
+| F11 / botão | Alternar tela cheia e janela |
 
-A versão Steam encontrada nesta máquina é 4.7.2; a validação desta entrega usou a **Godot 4.5 oficial**, baixada em `.tools/` (ignorada pelo Git). Não depende de Steam ou de Drowned.
+**Sono:** aproxime-se da cama e use E. Ajuste o despertador e escolha salvar e dormir ou dormir sem salvar. Para conferir o limite, saia para a rua, abra C, escolha 03:59 e clique numa data disponível; aguarde um segundo após o salto. O quarto e a oferta de salvamento aparecem às 04h, sem opção de cancelar; o despertar é às 12h. Para conferir em casa, o debug pode posicionar o relógio exatamente às 04h dentro do quarto.
+
+**Calendário:** selecione ano, estação e horário, depois clique no dia desejado. Datas anteriores ao relógio atual ficam desabilitadas. Abrir o painel congela o tempo; Esc fecha. O salto não executa agendas, atividades ou noites intermediárias. Um destino exatamente às 04h respeita o sono obrigatório. O quadro contém os 30 dias alinhados com seus dias da semana.
+
+**Percurso:** saia do quarto, caminhe até a porta sinalizada à direita da rua e use E. Siga para a direita pelas placas até a porta da faculdade; use E para entrar no pátio. O HUD mostra distância aproximada, segundos decorridos e minutos de jogo. Medição automatizada com física e relógio reais: **12.351 px em 68,717 s, +68 minutos**, sem paradas, velocidade atual de 180 px/s. Esperas e menus entram no contador de segundos; o relógio do jogo respeita suas pausas. Reentrar pelo lado da rua reinicia a medição. T muda o tile e reposiciona o jogador: não use durante uma medição contínua.
+
+## Salvamentos
+
+Partida em `user://saves/slot_01/manual.json` e `auto.json`; preferência de autosave em `user://settings.json`. No Windows padrão, `user://` corresponde a `%APPDATA%\Godot\app_userdata\AnotherLife`. Consulte Projeto → Abrir pasta de dados do usuário no editor.
+
+O manual guarda o estado **antes do sono**; o automático, quando habilitado, guarda após acordar e ao trocar de mapa. Iniciar o laboratório não sobrescreve o auto existente nem carrega automaticamente: use C e o botão do slot desejado. Um auto não substitui um manual.
+
+Esquema versão 1: minutos/fração e origem da semana, nome escolhido no campo de teste, área/posição, despertador/contexto do sono e tile. Somente sistemas já implementados são persistidos; futuros estados acadêmicos, sociais e inventário precisarão ampliar o esquema. Escrita em temporário seguida de renomeação na mesma pasta; erro mantém a oferta aberta para tentar novamente ou dormir sem salvar.
 
 ## Validação reproduzível
 
-Com o executável Godot 4.5 no PATH:
+Com o executável Godot 4.7 no PATH:
 
 ```powershell
 godot --headless --path . --editor --quit
@@ -53,34 +56,23 @@ godot --headless --path . --script res://tests/time_manager_test.gd
 godot --headless --path . --script res://tests/interior_time_test.gd
 godot --headless --path . --script res://tests/timed_action_test.gd
 godot --headless --path . --script res://tests/dialogue_test.gd
+godot --headless --path . --script res://tests/sleep_save_test.gd
+godot --headless --path . --script res://tests/travel_display_test.gd
 ```
 
-Nesta máquina:
+Nesta máquina, substitua `godot` por `& '.\.tools\godot-4.7.2\Godot_v4.7.2-stable_win64_console.exe'`; engine e logs em `test-results/` ignorados pelo Git. Não depende de Steam ou Drowned.
 
-```powershell
-& '.\.tools\godot-4.5\Godot_v4.5-stable_win64_console.exe' --headless --path . --script res://tests/scale_lab_test.gd
-& '.\.tools\godot-4.5\Godot_v4.5-stable_win64_console.exe' --headless --path . --script res://tests/time_manager_test.gd
-& '.\.tools\godot-4.5\Godot_v4.5-stable_win64_console.exe' --headless --path . --script res://tests/interior_time_test.gd
-& '.\.tools\godot-4.5\Godot_v4.5-stable_win64_console.exe' --headless --path . --script res://tests/timed_action_test.gd
-& '.\.tools\godot-4.5\Godot_v4.5-stable_win64_console.exe' --headless --path . --script res://tests/dialogue_test.gd
-```
+- Sono/save: **51 verificações, zero falhas**, com cama 32/64, 04h dentro/fora, despertador, eventos, cliques de GUI, carregar/salvar, arquivos independentes, preferências, arquivos inválidos, calendário e filtros.
+- Regressões: laboratório **60**, relógio **41**, interiores **42**, atividades **34** e diálogo **30**, todas sem falhas na 4.7.2. Esperas reais curtas confirmam congelamento no quarto/diálogo externo; medições anteriores de 60 segundos não foram repetidas nesta entrega.
+- Exibição/percurso: **12 verificações, zero falhas**, escala/HUD em 960×540, 1366×768 e 1920×1080, física e portas. Acrescente `-- --walk` para rota completa com ticks naturais: **14 verificações, zero falhas** no ensaio executado.
+- Sete capturas renderizadas: runner `travel_display_test.gd` sem `--headless`, acrescentando `-- --capture`: **19 verificações, zero falhas**. Imagens em `docs/screenshots/`, incluindo calendário, sono, tela cheia e estações, inspecionadas visualmente.
 
-Para reproduzir capturas com renderização, execute o runner **sem `--headless`**, acrescentando `-- --capture`. As imagens vão para `docs/screenshots/`.
+Sono/save e percurso usam diretórios isolados em `user://test_runs/`, sem escrever nos slots da partida. Runners retornam código 1 em caso de falha. Caminhada completa leva aproximadamente 70 segundos. Não foi realizado playtest humano.
 
-O runner exercita movimento com o servidor de física, oito direções, idle, quadros, paredes, cama/mesa em ambas as escalas, aproximação física e interação nas portas, seis ciclos quarto↔rua, marcadores de entrada e ausência de mapas duplicados. Ele retorna código 1 em caso de falha.
+## Hipóteses e próximo passo
 
-O runner `time_manager_test.gd` verifica minutos inteiros/fracionários, equivalência de 3600 frames a 60 FPS, eventos intermediários em ordem, meia-noite, estações, ano, semanas e origem configurável. Acrescente `-- --realtime` para medir também **60 segundos reais** com o relógio de produção ativado na rua. `--capture` salva `docs/screenshots/time_clock.png` e exige execução sem `--headless`.
+**[PROPOSTA]** Início na primavera 1, ano 1, 06h, segunda-feira; origem da semana configurável. Alarme inicial 06h; se coincidir com o instante de deitar, vale o toque do dia seguinte. Ao acordar, a fração natural reinicia em zero. Atraso restante de um frame que atinge 04h é descartado. Autosave em transição/despertar e campo de nome no debug são UX de laboratório.
 
-O runner `interior_time_test.gd` verifica congelamento no quarto, movimento com relógio parado, portas, preservação de frações, 20 ciclos de entrada/saída e passagem de meia-noite apenas ao retomar tempo externo. Inclui uma espera real curta com ticks automáticos; acrescente `-- --realtime` para esperar **60 segundos reais dentro do quarto** e conferir que o relógio avança novamente ao sair pela porta. O intervalo real é medido por contador monotônico, separado do calendário do jogo.
+Ações comuns que terminariam às 04h ou depois continuam recusadas antes de iniciar, conforme P1-05. **[PENDENTE]** UX definitiva de atividades no limite e consequências do sono curto; não foi inventado efeito de fadiga nem barra de energia. Alarmes exatamente às 04h seguem o horário selecionado; esclarecer esse caso de fronteira antes do balanceamento final.
 
-Para conferir manualmente: anote a hora ao entrar no quarto, caminhe e espere; a hora fica igual. Saia com E: o rodapé muda para “Tempo externo” e volta a avançar.
-
-O runner `timed_action_test.gd` verifica duração exata dentro/fora, frações, virada de data/ano, ordem dos eventos, recusa sem efeitos no limite das 04h, proteção contra avanço recursivo e integração com tecla R/botão/HUD. `--capture` salva `docs/screenshots/timed_action.png` e exige execução sem `--headless`. Na cena inicial, pressione R: 06:00 vira 07:00 e esperar no quarto conserva 07:00.
-
-O runner `dialogue_test.gd` verifica proximidade física, propagação de teclado/cliques na GUI, falas em ordem, cancelamento, bloqueio de ações, pausa no quarto/rua, frações, retomada e interação em 32/64. Inclui 2 segundos reais de conversa externa com callbacks automáticos; `-- --realtime` amplia para 60 segundos. `--capture` salva `dialogue_room.png` e `dialogue_street.png` com renderização, exigindo execução sem `--headless`.
-
-## Limites e próximo passo
-
-As falas e os NPCs são placeholders técnicos. Escolhas/ramificações, elenco canônico, sono, save, universidade, férias e hobbies continuam nas tarefas posteriores. A escolha de nome do protagonista será feita no fluxo de nova partida; o laboratório não fixa nome canônico.
-
-Veja [decisões, capturas e progresso](docs/decisions.md). Próxima tarefa: **P1-07 — sono, despertador e limite das 04h**, com casos dentro/fora de casa e despertar às 12h. O relógio natural ainda pode passar das 04h; avanços explícitos continuam protegidos contra o próximo limite pela regra provisória de P1-05. Antes de arte em massa, confirmar a escala provisória com o criador. **P0-03 permanece pendente** de acesso explícito ao projeto Drowned.
+Próxima tarefa: **P2-01 — consolidar o trajeto residencial → Horizonte**, usando o percurso atual para testar distância e chegada para aula às 09h, sem tratar suas dimensões como mapa canônico. Faculdade acadêmica, férias, agendas, relações, diário e hobbies continuam depois. **P0-03 permanece pendente** de acesso explícito ao Drowned; seu repositório não foi alterado. Veja o [registro de decisões](docs/decisions.md).

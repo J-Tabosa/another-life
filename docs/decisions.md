@@ -196,3 +196,72 @@ Os cliques passaram na execução renderizada; para o headless, o runner injeta 
 ### Próxima tarefa
 
 **P1-07 — sono, despertador e limite das 04h**, incluindo casa/fora de casa e despertar às 12h do mesmo dia quando fora. Permanecem as pendências de escala, dia da semana e localização, e a recusa provisória de ações da P1-05.
+
+---
+
+## P1-07 + P1-08 — sono, salvamentos e laboratórios — 12/10/2026
+
+**Escopo autorizado pelo criador:** P1-07 (sono/despertador/04h), P1-08 (save manual e auto), desenvolvimento em Godot 4.7, tela cheia preservando escala, calendário clicável para debug, filtros sazonais e percurso/pátio grande para medir a caminhada. Esta autorização amplia a regra usual de uma tarefa por entrega; o mapa da faculdade continua laboratório, sem implementar antecipadamente aulas, notas ou agendas.
+
+### Arquivos e integração
+
+- `scripts/core/time_manager.gd`: sinal do limite obrigatório, bloqueio de novos avanços enquanto há escolha de sono e API específica de avanço durante sono. A passagem de meia-noite permanece normal. O limite é habilitado explicitamente pelo laboratório, mantendo o relógio reutilizável sem impor sozinho política de cena.
+- `scripts/core/sleep_manager.gd`: solicitação/cancelamento voluntário, contexto obrigatório dentro/fora, cálculo do próximo despertador e despertar às 12h fora. Não define consequências de fadiga.
+- `scripts/core/save_manager.gd`: esquema JSON versão 1, validação antes de carregar, slots manual/auto separados, escrita temporária e renomeação, preferência de autosave separada e desligada por padrão.
+- `scripts/ui/lab_panel.gd`, `sleep_panel.gd`, `calendar_debug_panel.gd`: modais com containers/scroll, escolha de sono/save, alarme, calendário de 30 dias, ano/estação/horário, preferência de auto e botões para carregar os dois arquivos.
+- `scripts/world/sleep_bed.gd`, `scenes/world/sleep_bed.tscn`, `room.tscn` e `lab_area.gd`: cama interativa em 32/64 e marcador seguro para despertar.
+- `scripts/world/travel_lab_area.gd`, `scenes/world/route.tscn`, `campus.tscn`, `street.tscn` e `door.gd`: percurso sinalizado 12.800×1.600 e pátio 2.400×1.600, colisões, transições em ambos os sentidos e câmera com limites próprios de cada mapa. Medição de percurso fica no laboratório.
+- `scripts/lab/scale_lab.gd`, `scenes/lab/scale_lab.tscn`, `scripts/dialogue/dialogue_panel.gd`, `project.godot`: integração, pausa por modal, retorno ao quarto, persistência, HUD responsivo, câmera zoom 1, fullscreen inicial sem stretch e filtro do mundo em camada abaixo da interface.
+- `scripts/world/dialogue_npc.gd`: label curta de placeholder para evitar sobreposição com o personagem ao despertar.
+- `localization/lab.csv` e recursos de tradução/importação: novas chaves pt_BR. en/es continuam pendentes.
+- `tests/sleep_save_test.gd`, `travel_display_test.gd`, `dialogue_test.gd`: cobertura nova e adaptação do runner de GUI aos IDs de dispositivos/viewport da Godot 4.7. README, AGENTS e `godot_4_7_migration.md` registram engine atual, comandos e próxima tarefa.
+
+### Regras e persistência
+
+Ticks externos param exatamente às 04h, mesmo com delta grande, retornam ao quarto se necessário e abrem a oferta de manual/sem manual. Esc não cancela sono obrigatório; movimento, atividade e portas permanecem bloqueados até a escolha. Fora: 04h → 12h no mesmo dia (480 minutos). Em casa: próximo despertador. O sono avança minutos e dias intermediários na ordem, sem disparar novamente o limite durante a própria noite.
+
+O manual captura o estado **pré-sono** e restaura a oferta ao carregar, inclusive o contexto de sono obrigatório fora de casa. O auto, se habilitado, guarda ao acordar e nas transições. Iniciar a cena ou carregar um slot não sobrescreve o auto existente. Não há carregamento automático na inicialização. Erro de manual mantém a escolha aberta; o jogador pode tentar novamente ou dormir sem salvar.
+
+`user://saves/slot_01/manual.json`, `auto.json` e `user://settings.json`. Esquema guarda relógio/fração/origem da semana, nome/posição/área, despertador/contexto e tile; sistemas ainda inexistentes não são antecipados no save. Arquivo inválido/corrompido preserva o estado corrente. O limite de posição valida os limites do mapa, não reconstitui toda a colisão de um arquivo editado manualmente. A renomeação é feita na mesma pasta; não foi simulado corte de energia nem falha física de disco.
+
+### Hipóteses técnicas e pendências
+
+**[PROPOSTA]** Alarme inicial 06h; alarme igual ao instante de deitar vale para o próximo dia. Fração natural reiniciada ao acordar, atraso excedente do frame interrompido às 04h descartado. Origem inicial da semana continua provisória/configurável. O campo de nome no debug testa persistência; não substitui o futuro fluxo de nova partida.
+
+A recusa prévia de atividades que terminariam às 04h ou depois permanece da P1-05. **[PENDENTE]** UX definitiva para essas ações, consequências balanceadas de sono curto e caso de alarme exatamente às 04h (atualmente desperta no horário selecionado). Sem barra de energia ou crafting.
+
+O calendário é debug de avanço: salta diretamente para a data/hora, sem simular noites/agenda/eventos intermediários. Destino exatamente às 04h dispara o sono obrigatório. Datas anteriores ficam desabilitadas. Os dias da semana seguem o contador absoluto, sem reiniciar em cada estação.
+
+Filtros técnicos suaves: primavera rosa, verão azul, outono laranja, inverno branco; não definem direção de arte nem clima. Dimensões do percurso/pátio, velocidade e placas são dados de laboratório, não cânone geográfico. Contador de segundos inclui pausas durante a viagem; minutos de jogo seguem as regras de pausa. Reentrar pelo lado residencial reinicia a medição.
+
+### Validação executada
+
+Godot **4.7.2.stable.official.ed1daf0bf**, importação/editor headless sem erros. Documentação oficial das migrações 4.5→4.6→4.7 consultada; mudanças aplicáveis registradas em [godot_4_7_migration.md](godot_4_7_migration.md).
+
+| Runner | Verificações | Resultado |
+|---|---:|---|
+| Sono/save | 51 | zero falhas |
+| Laboratório | 60 | zero falhas |
+| Relógio | 41 | zero falhas |
+| Interiores | 42 | zero falhas |
+| Atividades | 34 | zero falhas |
+| Diálogo | 30 | zero falhas |
+| Exibição/percurso padrão | 12 | zero falhas |
+
+Total dos sete runners padrão: **270 verificações**. Sono/save usa interações reais de teclado e cliques de GUI, camas 32/64, sono obrigatório/voluntário, eventos intermediários, save pré-sono, retomar contexto obrigatório, preferências e arquivos independentes, arquivo inválido/corrompido, calendário/alinhamento da semana e filtros. Testes escrevem somente em diretórios isolados de `user://test_runs/`.
+
+Ensaio adicional `travel_display_test.gd -- --walk`: **14 verificações, zero falhas**; percurso completo com física de colisão e ticks naturais, **12.351 px em 68,717 segundos reais → +68 minutos**. Porta distante alcançada caminhando e entrada/saída do pátio corretas. Essa variante inclui as verificações padrão; não somar suas contagens como testes independentes.
+
+Execução renderizada `-- --capture`: **19 verificações, zero falhas**, sete PNGs gerados pela engine e inspecionados visualmente. Escala/HUD verificados em 960×540, 1366×768 e 1920×1080; viewport de tela cheia capturado nesta máquina: 1366×767. Corpo do protagonista conserva 40×56 pixels. Não foi realizado playtest humano nem conferência de todos os monitores/DPIs. Regressões usaram esperas reais curtas; não repetiram os ensaios históricos de 60 segundos. Logs locais ignorados pelo Git.
+
+![Calendário clicável e controles de salvamento](screenshots/calendar_debug.png)
+
+![Sono obrigatório com salvamento antes de avançar](screenshots/forced_sleep.png)
+
+![Tela cheia mantendo o tamanho do protagonista](screenshots/fullscreen_scale.png)
+
+Filtros no mesmo enquadramento do pátio: [primavera](screenshots/season_0.png), [verão](screenshots/season_1.png), [outono](screenshots/season_2.png), [inverno](screenshots/season_3.png).
+
+### Próxima tarefa
+
+**P2-01 — trajeto residencial → Horizonte sinalizado**, consolidando o protótipo atual para chegar a pé à aula das 09h em ritmo viável. Nenhuma dimensão do laboratório foi promovida a cânone. P0-03/Drowned, origem da semana, conteúdo final, en/es e balanceamento permanecem pendentes.
