@@ -31,6 +31,7 @@ func press_key(code: Key, echo: bool = false) -> void:
 	var event := InputEventKey.new()
 	event.keycode = code
 	event.physical_keycode = code
+	event.device = InputEvent.DEVICE_ID_KEYBOARD
 	event.pressed = true
 	event.echo = echo
 	# Use engine input dispatch to catch propagation into world interactions.
@@ -38,7 +39,7 @@ func press_key(code: Key, echo: bool = false) -> void:
 	await process_frame
 	event.pressed = false
 	event.echo = false
-	Input.parse_input_event(event)
+	Input.parse_input_event(event.duplicate())
 	await process_frame
 
 
@@ -52,6 +53,7 @@ func click_button(button: Button) -> void:
 	var motion := InputEventMouseMotion.new()
 	motion.position = center
 	motion.global_position = center
+	motion.device = InputEvent.DEVICE_ID_MOUSE
 	# Coordinates are local to the viewport, including in the headless display.
 	root.push_input(motion, true)
 	await process_frame
@@ -59,8 +61,9 @@ func click_button(button: Button) -> void:
 	event.position = center
 	event.global_position = center
 	event.button_index = MOUSE_BUTTON_LEFT
+	event.device = InputEvent.DEVICE_ID_MOUSE
 	event.pressed = true
-	root.push_input(event, true)
+	root.push_input(event.duplicate(), true)
 	await process_frame
 	event.pressed = false
 	root.push_input(event, true)
@@ -75,6 +78,9 @@ func capture(file_name: String) -> void:
 
 func run() -> void:
 	Engine.max_fps = 60
+	# Fullscreen has no physical display under headless; establish a GUI viewport.
+	root.mode = Window.MODE_WINDOWED
+	root.size = Vector2i(1280, 720)
 	var lab: Node2D = LAB.instantiate()
 	root.add_child(lab)
 	var clock: TimeManager = lab.time_manager

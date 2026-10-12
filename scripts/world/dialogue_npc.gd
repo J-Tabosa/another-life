@@ -18,4 +18,4 @@ func interact(player: CharacterBody2D) -> void:
 func _draw() -> void:
 	# Generic laboratory placeholder; no canonical NPC identity or final art.
 	draw_rect(Rect2(-20, -48, 40, 40), Color("99c3e0"))
-	draw_string(ThemeDB.fallback_font, Vector2(-64, -96), tr("LAB_NPC"), HORIZONTAL_ALIGNMENT_LEFT, -1, 16)
+	draw_string(ThemeDB.fallback_font, Vector2(-32, -96), tr("LAB_NPC_MARKER"), HORIZONTAL_ALIGNMENT_LEFT, -1, 16)

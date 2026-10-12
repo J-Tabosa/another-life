@@ -7,7 +7,7 @@ Leia **`docs/ANOTHER_LIFE_GDD_DIA0.md`** antes de modificar o projeto. Este arqu
 1. Inspecione a estrutura e os scripts existentes antes de propor código.
 2. Identifique a **tarefa atual** (`P0-01`, `P1-03` etc.) e execute **apenas** ela.
 3. Apresente um plano curto, arquivos envolvidos e eventuais dependências.
-4. Faça alterações pequenas, idiomáticas para **Godot 4.5 / GDScript** e fáceis de revisar.
+4. Faça alterações pequenas, idiomáticas para **Godot 4.7 / GDScript** e fáceis de revisar. A engine foi atualizada por solicitação do criador; veja `docs/godot_4_7_migration.md`. As referências históricas à 4.5 no GDD permanecem como registro.
 5. Prefira dados e eventos reutilizáveis a lógica narrativa acoplada a cenas específicas.
 6. Use placeholders quando arte e conteúdo final não existirem; identifique-os claramente.
 7. Faça testes reais sempre que possível; **não afirme que testou se não conseguiu executar**.
@@ -32,3 +32,5 @@ Leia **`docs/ANOTHER_LIFE_GDD_DIA0.md`** antes de modificar o projeto. Este arqu
 ## Prioridade atual
 
 A primeira sessão é **laboratório de escala + movimento + quarto↔rua**, conforme seção 15 do GDD. Não implementar o jogo inteiro, nem os managers de todas as fases antecipadamente.
+
+**P1-07 e P1-08 concluídas no laboratório**, com sono, despertador, limite das 04h e salvamentos separados. O criador autorizou nesta entrega também tela cheia, calendário de debug, filtros sazonais e percurso/pátio de faculdade para testes. Próxima tarefa: **P2-01 — consolidar o trajeto residencial → Horizonte**; o mapa grande atual é placeholder de medição. Consulte o README e o registro mais recente em `docs/decisions.md` antes de ampliar o escopo.

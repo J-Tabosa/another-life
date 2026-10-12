@@ -31,3 +31,33 @@ LAB_DIALOGUE_01,Olá! Esta conversa é um teste com um NPC provisório.
 LAB_DIALOGUE_02,Pode conversar com calma. O relógio fica parado durante o diálogo.
 DIALOGUE_NEXT,E / Enter — Continuar
 DIALOGUE_CLOSE,Esc — Fechar
+BED_INTERACT,E — dormir / despertador
+SLEEP_TITLE,Dormir
+SLEEP_FORCED,04h — Acho que já deu por hoje...
+SLEEP_ALARM,Despertador (hora e minuto)
+SLEEP_WAKE,Acordar às %02d:%02d · %.2f horas de sono
+SLEEP_SAVE,Salvar manualmente e dormir
+SLEEP_SKIP,Dormir sem salvar manualmente
+SLEEP_CANCEL,Cancelar
+SLEEP_RESULT,Dormiu %d minutos. Confira a hora no rodapé.
+SAVE_FAILED,Falha ao salvar. Você pode tentar novamente ou dormir sem salvar.
+LOAD_FAILED,Arquivo ausente ou inválido. A partida atual foi preservada.
+LOAD_OK,Partida carregada.
+DEBUG_OPEN,C — Calendário / saves
+DEBUG_CALENDAR,Calendário de DEBUG
+DEBUG_JUMP_HINT,Escolha ano e estação; clique em um dia para saltar ao horário selecionado. O salto não simula eventos nem noites anteriores.
+DEBUG_YEAR,Ano
+DEBUG_NAME,Nome do protagonista (teste de persistência)
+DEBUG_AUTOSAVE,Autosave nas transições e ao acordar
+LOAD_MANUAL,Carregar manual
+LOAD_AUTO,Carregar autosave
+DEBUG_CLOSE,Esc — Fechar calendário
+FULLSCREEN_TOGGLE,F11 — Tela cheia
+LAB_ROUTE,Percurso de teste até a Horizonte
+LAB_CAMPUS,Horizonte — pátio PLACEHOLDER
+ROUTE_HOME,E — voltar para casa
+ROUTE_CAMPUS,E — caminho da Horizonte
+ROUTE_SIGN,Horizonte → · marco %d px (provisório)
+TRAVEL_PROGRESS, · %.1f mil px · %.1fs reais · +%d min
+TRAVEL_RESULT,Chegada: %.1fs reais · +%d minutos do jogo
+LAB_NPC_MARKER,NPC de teste
