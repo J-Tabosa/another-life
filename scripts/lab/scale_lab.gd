@@ -4,15 +4,19 @@ const AREAS := {
 	&"room": preload("res://scenes/world/room.tscn"),
 	&"street": preload("res://scenes/world/street.tscn"),
 }
+const SEASON_KEYS := ["SEASON_SPRING", "SEASON_SUMMER", "SEASON_AUTUMN", "SEASON_WINTER"]
+const WEEKDAY_KEYS := ["WEEKDAY_MON", "WEEKDAY_TUE", "WEEKDAY_WED", "WEEKDAY_THU", "WEEKDAY_FRI", "WEEKDAY_SAT", "WEEKDAY_SUN"]
 var area: Node2D
 var area_id: StringName = &"room"
 var tile_size: int = 32
 var transitioning: bool = false
 @onready var player: CharacterBody2D = $Player
+@onready var time_manager: TimeManager = $TimeManager
 
 
 func _ready() -> void:
 	_setup_inputs()
+	time_manager.minute_changed.connect(_on_minute_changed)
 	change_area(&"room", &"start")
 
 
@@ -75,6 +79,9 @@ func change_area(target: StringName, spawn: StringName) -> void:
 	area_id = target
 	area.tile_size = tile_size
 	$World.add_child(area)
+	# Natural time is enabled only in the outdoor laboratory.
+	time_manager.running = area.exterior
+	_update_clock()
 	area.get_node("Door").transition_requested.connect(request_transition)
 	player.position = marker.position
 	player.velocity = Vector2.ZERO
@@ -82,6 +89,16 @@ func change_area(target: StringName, spawn: StringName) -> void:
 	player.update_animation(Vector2.ZERO)
 	player.get_node("Camera2D").reset_smoothing()
 	transitioning = false
+
+
+func _on_minute_changed(_absolute_minutes: int) -> void:
+	_update_clock()
+
+
+func _update_clock() -> void:
+	var calendar := time_manager.get_calendar()
+	var status := tr("CLOCK_RUNNING") if time_manager.running else tr("CLOCK_STOPPED")
+	$HUD/Clock.text = tr("CLOCK_DATE") % [calendar.year, tr(SEASON_KEYS[calendar.season_index]), calendar.day, tr(WEEKDAY_KEYS[calendar.weekday]), calendar.hour, calendar.minute] + " · " + status
 
 
 func _process(_delta: float) -> void:
