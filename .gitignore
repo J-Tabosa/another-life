@@ -1,0 +1,10 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Local exports, credentials and generated validation captures.
+/builds/
+/.tools/
+/.env
+/.env.*
+/test-results/

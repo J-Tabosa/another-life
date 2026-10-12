@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/world/lab_area.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/world/door.tscn" id="2"]
+
+[node name="Street" type="Node2D"]
+script = ExtResource("1")
+exterior = true
+
+[node name="Door" parent="." instance=ExtResource("2")]
+position = Vector2(480, 328)
+target_area = &"room"
+
+[node name="Spawns" type="Node2D" parent="."]
+[node name="door" type="Marker2D" parent="Spawns"]
+position = Vector2(480, 402)

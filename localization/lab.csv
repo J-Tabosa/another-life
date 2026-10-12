@@ -1,0 +1,10 @@
+keys,pt_BR
+LAB_TITLE,LAB — PLACEHOLDERS
+LAB_ROOM,Quarto
+LAB_STREET,Rua residencial de teste
+LAB_SCALE,Tile %d px · quadro 128×128 · escala provisória
+LAB_CONTROLS,WASD / setas: andar · E: atravessar porta · T: comparar 32/64 · F: quadro e colisão
+LAB_INTERACT,E — entrar / sair
+LAB_BED,Cama provisória
+LAB_DESK,Mesa provisória
+LAB_DOOR,Porta
