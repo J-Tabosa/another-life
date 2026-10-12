@@ -4,7 +4,7 @@ Protótipo em **Godot 4.5 / GDScript**, conforme o [GDD do Dia 0](docs/ANOTHER_L
 
 ## Entrega atual
 
-**P1-04 — pausa temporal em interiores validada**, sobre o TimeManager e o laboratório da primeira sessão técnica (seção 15 do GDD). Cena principal: `scenes/lab/scale_lab.tscn`.
+**P1-05 — ações com duração explícita**, sobre o TimeManager e o laboratório da primeira sessão técnica (seção 15 do GDD). Cena principal: `scenes/lab/scale_lab.tscn`.
 
 - Personagem placeholder: cada quadro tem 128×128 px, corpo com margem transparente e colisão nos pés.
 - Movimento em oito direções, diagonal normalizada e animação/idle em quatro direções.
@@ -15,8 +15,12 @@ Protótipo em **Godot 4.5 / GDScript**, conforme o [GDD do Dia 0](docs/ANOTHER_L
 - Relógio externo: 1 segundo real = 1 minuto do jogo; data/hora visíveis no rodapé, preservadas nas transições. A ativação natural é restrita à rua.
 - No quarto, o relógio natural congela enquanto o personagem continua andando. Sair preserva a fração de segundo anterior, sem descontar o tempo passado dentro.
 - Minutos absolutos e eventos por minuto; meia-noite, 30 dias/estação, 120 dias/ano e continuidade dos dias da semana. Sem férias/agendas nesta tarefa.
+- Atividade placeholder de 60 minutos, acionada por R ou pelo botão: avança exatamente uma hora mesmo no quarto, preservando a pausa natural. Duração e chave de texto vêm de `data/activities/lab_activity.tres`, um recurso `TimedAction` reutilizável.
+- `TimeManager.advance_minutes()` valida antes de avançar e emite os minutos/dias intermediários em ordem. A fração acumulada do tempo externo é preservada.
 
 **[PROPOSTA]** O teste começa na primavera 1, ano 1, às 06h. Segunda-feira é a origem provisória; `weekday_offset` do nó `TimeManager` permite escolher outra origem enquanto a decisão canônica está pendente.
+
+**[PROPOSTA]** Enquanto P1-07 não implementa o sono, ações que terminariam às 04h ou depois são recusadas antes de começar. Por exemplo, às 03:30 a atividade de 60 minutos não avança o relógio. **[PENDENTE]** UX definitiva de interrupção/truncamento no limite das 04h.
 
 ## Como rodar
 
@@ -30,6 +34,7 @@ Protótipo em **Godot 4.5 / GDScript**, conforme o [GDD do Dia 0](docs/ANOTHER_L
 | E | Atravessar a porta quando próximo |
 | T | Alternar tiles/objetos entre 32 e 64; reposiciona em ponto seguro |
 | F | Mostrar/ocultar quadro 128×128 e colisão dos pés |
+| R / botão de atividade | Avançar 60 minutos por uma atividade provisória |
 
 A versão Steam encontrada nesta máquina é 4.7.2; a validação desta entrega usou a **Godot 4.5 oficial**, baixada em `.tools/` (ignorada pelo Git). Não depende de Steam ou de Drowned.
 
@@ -42,6 +47,7 @@ godot --headless --path . --editor --quit
 godot --headless --path . --script res://tests/scale_lab_test.gd
 godot --headless --path . --script res://tests/time_manager_test.gd
 godot --headless --path . --script res://tests/interior_time_test.gd
+godot --headless --path . --script res://tests/timed_action_test.gd
 ```
 
 Nesta máquina:
@@ -50,6 +56,7 @@ Nesta máquina:
 & '.\.tools\godot-4.5\Godot_v4.5-stable_win64_console.exe' --headless --path . --script res://tests/scale_lab_test.gd
 & '.\.tools\godot-4.5\Godot_v4.5-stable_win64_console.exe' --headless --path . --script res://tests/time_manager_test.gd
 & '.\.tools\godot-4.5\Godot_v4.5-stable_win64_console.exe' --headless --path . --script res://tests/interior_time_test.gd
+& '.\.tools\godot-4.5\Godot_v4.5-stable_win64_console.exe' --headless --path . --script res://tests/timed_action_test.gd
 ```
 
 Para reproduzir capturas com renderização, execute o runner **sem `--headless`**, acrescentando `-- --capture`. As imagens vão para `docs/screenshots/`.
@@ -62,8 +69,10 @@ O runner `interior_time_test.gd` verifica congelamento no quarto, movimento com 
 
 Para conferir manualmente: anote a hora ao entrar no quarto, caminhe e espere; a hora fica igual. Saia com E: o rodapé muda para “Tempo externo” e volta a avançar.
 
+O runner `timed_action_test.gd` verifica duração exata dentro/fora, frações, virada de data/ano, ordem dos eventos, recusa sem efeitos no limite das 04h, proteção contra avanço recursivo e integração com tecla R/botão/HUD. `--capture` salva `docs/screenshots/timed_action.png` e exige execução sem `--headless`. Na cena inicial, pressione R: 06:00 vira 07:00 e esperar no quarto conserva 07:00.
+
 ## Limites e próximo passo
 
 Sem conteúdo narrativo nesta etapa. Sono, save, NPCs, universidade, férias e hobbies continuam nas tarefas posteriores. A escolha de nome do protagonista será feita no fluxo de nova partida; o laboratório não fixa nome canônico.
 
-Veja [decisões, capturas e progresso](docs/decisions.md). Próxima tarefa: **P1-05 — ações com duração explícita**, cujo critério é avançar exatamente 60 minutos por uma atividade de uma hora mesmo em interior. A pausa natural em interiores já foi validada; ainda não existe API de atividades nesta entrega. Antes de arte em massa, confirmar a escala provisória com o criador. **P0-03 permanece pendente** de acesso explícito ao projeto Drowned.
+Veja [decisões, capturas e progresso](docs/decisions.md). Próxima tarefa: **P1-06 — sistema mínimo de diálogo/interação**, cujo critério é conversar sem consumir tempo por padrão. O sono compulsório continua reservado a P1-07: o relógio natural ainda pode passar das 04h, e esta etapa protege somente os avanços explícitos contra o próximo limite. Antes de arte em massa, confirmar a escala provisória com o criador. **P0-03 permanece pendente** de acesso explícito ao projeto Drowned.
