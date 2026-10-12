@@ -4,6 +4,7 @@ signal transition_requested(target_area: StringName, spawn_id: StringName)
 
 @export var target_area: StringName
 @export var spawn_id: StringName = &"door"
+@export var hint_key: StringName = &"LAB_INTERACT"
 
 
 func can_interact(player: CharacterBody2D) -> bool:

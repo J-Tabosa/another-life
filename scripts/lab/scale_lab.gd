@@ -13,6 +13,7 @@ var tile_size: int = 32
 var transitioning: bool = false
 @onready var player: CharacterBody2D = $Player
 @onready var time_manager: TimeManager = $TimeManager
+@onready var dialogue_panel: DialoguePanel = $HUD/DialoguePanel
 
 
 func _ready() -> void:
@@ -20,6 +21,8 @@ func _ready() -> void:
 	time_manager.minute_changed.connect(_on_minute_changed)
 	$HUD/ActivityButton.text = tr(TEST_ACTIVITY.label_key) % TEST_ACTIVITY.duration_minutes
 	$HUD/ActivityButton.pressed.connect(_run_test_activity)
+	dialogue_panel.opened.connect(_sync_controls)
+	dialogue_panel.closed.connect(_sync_controls)
 	change_area(&"room", &"start")
 
 
@@ -41,10 +44,12 @@ func _setup_inputs() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if transitioning:
+	if transitioning or dialogue_panel.active:
 		return
 	if event.is_action_pressed("interact") and not event.is_echo():
-		area.get_node("Door").interact(player)
+		var target := _interaction_target()
+		if target != null:
+			target.interact(player)
 	elif event.is_action_pressed("compare_scale") and not event.is_echo():
 		tile_size = 64 if tile_size == 32 else 32
 		area.tile_size = tile_size
@@ -60,6 +65,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _run_test_activity() -> void:
+	if transitioning or dialogue_panel.active:
+		return
 	if time_manager.advance_minutes(TEST_ACTIVITY.duration_minutes):
 		$HUD/ActivityResult.text = tr("ACTIVITY_COMPLETED") % TEST_ACTIVITY.duration_minutes
 	else:
@@ -67,7 +74,7 @@ func _run_test_activity() -> void:
 
 
 func request_transition(target: StringName, spawn: StringName) -> void:
-	if transitioning:
+	if transitioning or dialogue_panel.active:
 		return
 	transitioning = true
 	change_area.call_deferred(target, spawn)
@@ -85,6 +92,7 @@ func change_area(target: StringName, spawn: StringName) -> void:
 		next_area.free()
 		transitioning = false
 		return
+	dialogue_panel.close()
 	if is_instance_valid(area):
 		$World.remove_child(area)
 		area.queue_free()
@@ -93,15 +101,41 @@ func change_area(target: StringName, spawn: StringName) -> void:
 	area.tile_size = tile_size
 	$World.add_child(area)
 	# Natural time is enabled only in the outdoor laboratory.
-	time_manager.running = area.exterior
-	_update_clock()
+	_sync_controls()
 	area.get_node("Door").transition_requested.connect(request_transition)
+	area.get_node("DialogueNPC").dialogue_requested.connect(_open_dialogue)
 	player.position = marker.position
 	player.velocity = Vector2.ZERO
 	player.facing = &"down" if target == &"street" else &"up"
 	player.update_animation(Vector2.ZERO)
 	player.get_node("Camera2D").reset_smoothing()
 	transitioning = false
+
+
+func _open_dialogue(data: DialogueData) -> void:
+	if not transitioning:
+		dialogue_panel.start(data)
+
+
+func _sync_controls() -> void:
+	player.controls_enabled = not dialogue_panel.active
+	player.velocity = Vector2.ZERO
+	time_manager.running = is_instance_valid(area) and area.exterior and not dialogue_panel.active
+	$HUD/ActivityButton.disabled = dialogue_panel.active
+	_update_clock()
+
+
+func _interaction_target() -> Area2D:
+	var nearest: Area2D
+	var nearest_distance := INF
+	for candidate in get_tree().get_nodes_in_group("interactables"):
+		if not area.is_ancestor_of(candidate) or not candidate.can_interact(player):
+			continue
+		var distance := player.global_position.distance_squared_to(candidate.global_position)
+		if distance < nearest_distance:
+			nearest = candidate
+			nearest_distance = distance
+	return nearest
 
 
 func _on_minute_changed(_absolute_minutes: int) -> void:
@@ -116,5 +150,6 @@ func _update_clock() -> void:
 
 func _process(_delta: float) -> void:
 	var location := tr("LAB_STREET") if area_id == &"street" else tr("LAB_ROOM")
-	var hint := tr("LAB_INTERACT") if is_instance_valid(area) and area.get_node("Door").can_interact(player) else ""
+	var target := _interaction_target() if not dialogue_panel.active else null
+	var hint := tr(target.hint_key) if target != null else ""
 	$HUD/Info.text = tr("LAB_TITLE") + " | " + location + " | " + tr("LAB_SCALE") % tile_size + "\n" + tr("LAB_CONTROLS") + "\n" + hint

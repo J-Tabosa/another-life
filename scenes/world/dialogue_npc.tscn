@@ -1,0 +1,15 @@
+[gd_scene load_steps=4 format=3]
+[ext_resource type="Script" path="res://scripts/world/dialogue_npc.gd" id="1"]
+[ext_resource type="Resource" path="res://data/dialogues/lab_conversation.tres" id="2"]
+[sub_resource type="RectangleShape2D" id="Interaction"]
+size = Vector2(112, 112)
+
+[node name="DialogueNPC" type="Area2D" groups=["interactables"]]
+collision_layer = 0
+collision_mask = 1
+script = ExtResource("1")
+dialogue = ExtResource("2")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -12)
+shape = SubResource("Interaction")

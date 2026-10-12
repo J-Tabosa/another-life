@@ -2,7 +2,7 @@
 
 ## Escopo e ordem
 
-Registro da primeira entrega: **primeira sessão técnica da seção 15 do GDD**, conforme a prioridade do AGENTS.md. Apenas o laboratório de escala, movimento e quarto↔rua. A tarefa atual P1-05 está registrada ao final deste documento.
+Registro da primeira entrega: **primeira sessão técnica da seção 15 do GDD**, conforme a prioridade do AGENTS.md. Apenas o laboratório de escala, movimento e quarto↔rua. A tarefa atual P1-06 está registrada ao final deste documento.
 
 | Roadmap | Estado nesta entrega |
 |---|---|
@@ -156,3 +156,43 @@ Captura renderizada pela Godot e inspecionada visualmente: botão, feedback e ro
 ### Próxima tarefa
 
 **P1-06 — sistema mínimo de diálogo/interação:** conversar sem consumir tempo por padrão. Sono e hobbies completos continuam nas tarefas correspondentes; escala, dia da semana inicial e localização en/es permanecem **[PENDENTE]**.
+
+---
+
+## P1-06 — diálogo/interação mínimos — 12/10/2026
+
+**Critério de aceite:** conversar não consome tempo por padrão. Implementação limitada a falas lineares reutilizáveis, um NPC placeholder em cada mapa e integração com relógio/controles existentes.
+
+### Arquivos e comportamento
+
+- `scripts/dialogue/dialogue_data.gd` e `data/dialogues/lab_conversation.tres`: recurso com chave de identificação do interlocutor e sequência de chaves traduzíveis. Duas falas técnicas, sem determinar elenco ou fatos narrativos canônicos.
+- `scripts/dialogue/dialogue_panel.gd` e `scenes/ui/dialogue_panel.tscn`: painel reutilizável com eventos `opened`/`closed`, avanço por E/Enter/botão e cancelamento por Esc/botão. Dados vazios são recusados antes de bloquear controles; uma conversa ativa não pode ser substituída.
+- `scripts/world/dialogue_npc.gd` e `scenes/world/dialogue_npc.tscn`: quadrado azul provisório com área de proximidade e evento de diálogo. Instâncias em `room.tscn` e `street.tscn`; sem agenda, relações ou identidade de um NPC do elenco.
+- `scripts/world/door.gd`/`door.tscn` e `scripts/lab/scale_lab.gd`: porta e NPC usam o grupo `interactables`, com alvo próximo selecionado pela menor distância dentro da área atual. Labels usam a chave da interação correspondente. A interação E continua funcionando nas portas.
+- `scripts/player/player.gd`: controle de movimento pode ser bloqueado durante a conversa; velocidade é zerada e animação fica idle. Não pausa o SceneTree.
+- `scenes/lab/scale_lab.tscn`, `localization/lab.csv`/`lab.pt_BR.translation`: painel, falas, botões e labels traduzíveis; README e este registro atualizados.
+- `tests/dialogue_test.gd` e `docs/screenshots/dialogue_*.png`: testes e capturas reproduzíveis.
+
+### Tempo e hipóteses técnicas
+
+Durante a conversa, o laboratório desativa os ticks naturais sem alterar minutos nem a fração externa. Ao fechar, consulta a área atual: interior continua congelado; rua retoma. Nenhum caminho do diálogo chama `advance_minutes()`. A tecla que fecha o painel é consumida, evitando reabrir a conversa ou acionar uma porta no mesmo evento.
+
+**[PROPOSTA]** Enquanto o painel está ativo, bloquear movimento, portas, atividade e controles de comparação do laboratório. Teclas E/Enter/Esc e caixa de falas sem retratos são UX técnica provisória. Ações programáticas de troca de mapa encerram a conversa com segurança e aplicam o estado do novo mapa. **[PENDENTE]** Conteúdo final, apresentação e escolhas/ramificações. Não foram adicionados managers globais, sistema de relações ou diário.
+
+### Como executar e validar
+
+Na Godot 4.5, F5. Caminhe até o quadrado azul à esquerda, espere aparecer “E — conversar” e use E. Avance com E/Enter/botão; feche com Esc/botão. Confira o horário antes/depois. Repita na rua: o rodapé indica tempo natural parado durante a conversa e volta a “Tempo externo” ao fechar.
+
+Runner: `godot --headless --path . --script res://tests/dialogue_test.gd`. Para capturas, retire `--headless` e acrescente `-- --capture`. A opção `-- --realtime` mede 60 segundos reais; nesta etapa foi executada a medição curta padrão.
+
+Godot `4.5.stable.official.876b29033`: importação/editor headless sem erros. **30 verificações de diálogo, zero falhas**, com proximidade física, propagação real de teclado, cliques na GUI, avanço/cancelamento, bloqueios, frações, troca programática de mapa, 32/64 e retomada. Medição final headless: **2,004 segundos reais de conversa na rua → +0 minutos**, com movimento bloqueado; ticks automáticos e movimento retomaram ao fechar. Execução renderizada: **32 verificações, zero falhas**, incluindo as duas capturas. Regressões: **60 do laboratório, 41 do relógio, 42 de interiores e 34 de atividades**, todas sem falhas.
+
+Os cliques passaram na execução renderizada; para o headless, o runner injeta eventos de mouse em coordenadas locais do viewport, evitando a transformação de coordenadas da janela. Capturas renderizadas pela engine e inspecionadas visualmente. Logs locais em `test-results/dialogue-*.log`, ignorados pelo Git. Sem playtest humano.
+
+![Diálogo no quarto](screenshots/dialogue_room.png)
+
+![Diálogo na rua com relógio parado](screenshots/dialogue_street.png)
+
+### Próxima tarefa
+
+**P1-07 — sono, despertador e limite das 04h**, incluindo casa/fora de casa e despertar às 12h do mesmo dia quando fora. Permanecem as pendências de escala, dia da semana e localização, e a recusa provisória de ações da P1-05.
