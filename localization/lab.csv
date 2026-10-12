@@ -3,7 +3,7 @@ LAB_TITLE,LAB — PLACEHOLDERS
 LAB_ROOM,Quarto
 LAB_STREET,Rua residencial de teste
 LAB_SCALE,Tile %d px · quadro 128×128 · escala provisória
-LAB_CONTROLS,WASD / setas: andar · E: atravessar porta · T: comparar 32/64 · F: quadro e colisão
+LAB_CONTROLS,WASD / setas: andar · E: interagir · T: comparar 32/64 · F: quadro e colisão
 LAB_INTERACT,E — entrar / sair
 LAB_BED,Cama provisória
 LAB_DESK,Mesa provisória
@@ -25,3 +25,9 @@ WEEKDAY_SUN,Domingo
 LAB_ACTIVITY,R — Atividade provisória (%d min)
 ACTIVITY_COMPLETED,Atividade concluída: +%d min.
 ACTIVITY_SLEEP_LIMIT,Não há tempo para concluir antes das 04h.
+LAB_NPC,NPC provisório
+LAB_TALK,E — conversar
+LAB_DIALOGUE_01,Olá! Esta conversa é um teste com um NPC provisório.
+LAB_DIALOGUE_02,Pode conversar com calma. O relógio fica parado durante o diálogo.
+DIALOGUE_NEXT,E / Enter — Continuar
+DIALOGUE_CLOSE,Esc — Fechar

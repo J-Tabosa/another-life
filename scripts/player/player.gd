@@ -3,6 +3,7 @@ extends CharacterBody2D
 @export var speed: float = 180.0
 var facing: StringName = &"down"
 var show_frame: bool = true
+var controls_enabled: bool = true
 @onready var sprite: AnimatedSprite2D = $Sprite
 
 
@@ -22,6 +23,10 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	if not controls_enabled:
+		velocity = Vector2.ZERO
+		update_animation(Vector2.ZERO)
+		return
 	var direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	velocity = direction * speed
 	move_and_slide()
