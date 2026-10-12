@@ -8,3 +8,17 @@ LAB_INTERACT,E — entrar / sair
 LAB_BED,Cama provisória
 LAB_DESK,Mesa provisória
 LAB_DOOR,Porta
+CLOCK_DATE,Ano %d · %s %d · %s · %02d:%02d
+CLOCK_RUNNING,Tempo externo
+CLOCK_STOPPED,Tempo natural parado
+SEASON_SPRING,Primavera
+SEASON_SUMMER,Verão
+SEASON_AUTUMN,Outono
+SEASON_WINTER,Inverno
+WEEKDAY_MON,Segunda-feira
+WEEKDAY_TUE,Terça-feira
+WEEKDAY_WED,Quarta-feira
+WEEKDAY_THU,Quinta-feira
+WEEKDAY_FRI,Sexta-feira
+WEEKDAY_SAT,Sábado
+WEEKDAY_SUN,Domingo
