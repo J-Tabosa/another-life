@@ -6,6 +6,7 @@ const AREAS := {
 }
 const SEASON_KEYS := ["SEASON_SPRING", "SEASON_SUMMER", "SEASON_AUTUMN", "SEASON_WINTER"]
 const WEEKDAY_KEYS := ["WEEKDAY_MON", "WEEKDAY_TUE", "WEEKDAY_WED", "WEEKDAY_THU", "WEEKDAY_FRI", "WEEKDAY_SAT", "WEEKDAY_SUN"]
+const TEST_ACTIVITY: TimedAction = preload("res://data/activities/lab_activity.tres")
 var area: Node2D
 var area_id: StringName = &"room"
 var tile_size: int = 32
@@ -17,6 +18,8 @@ var transitioning: bool = false
 func _ready() -> void:
 	_setup_inputs()
 	time_manager.minute_changed.connect(_on_minute_changed)
+	$HUD/ActivityButton.text = tr(TEST_ACTIVITY.label_key) % TEST_ACTIVITY.duration_minutes
+	$HUD/ActivityButton.pressed.connect(_run_test_activity)
 	change_area(&"room", &"start")
 
 
@@ -25,6 +28,7 @@ func _setup_inputs() -> void:
 		"move_left": [KEY_A, KEY_LEFT], "move_right": [KEY_D, KEY_RIGHT],
 		"move_up": [KEY_W, KEY_UP], "move_down": [KEY_S, KEY_DOWN],
 		"interact": [KEY_E], "compare_scale": [KEY_T], "show_frame": [KEY_F],
+		"test_activity": [KEY_R],
 	}
 	for action: String in bindings:
 		if InputMap.has_action(action):
@@ -51,6 +55,15 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("show_frame") and not event.is_echo():
 		player.show_frame = not player.show_frame
 		player.queue_redraw()
+	elif event.is_action_pressed("test_activity") and not event.is_echo():
+		_run_test_activity()
+
+
+func _run_test_activity() -> void:
+	if time_manager.advance_minutes(TEST_ACTIVITY.duration_minutes):
+		$HUD/ActivityResult.text = tr("ACTIVITY_COMPLETED") % TEST_ACTIVITY.duration_minutes
+	else:
+		$HUD/ActivityResult.text = tr("ACTIVITY_SLEEP_LIMIT")
 
 
 func request_transition(target: StringName, spawn: StringName) -> void:

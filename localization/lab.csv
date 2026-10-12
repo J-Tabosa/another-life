@@ -22,3 +22,6 @@ WEEKDAY_THU,Quinta-feira
 WEEKDAY_FRI,Sexta-feira
 WEEKDAY_SAT,Sábado
 WEEKDAY_SUN,Domingo
+LAB_ACTIVITY,R — Atividade provisória (%d min)
+ACTIVITY_COMPLETED,Atividade concluída: +%d min.
+ACTIVITY_SLEEP_LIMIT,Não há tempo para concluir antes das 04h.

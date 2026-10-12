@@ -42,3 +42,19 @@ offset_right = 940.0
 offset_bottom = 538.0
 mouse_filter = 2
 theme_override_font_sizes/font_size = 18
+
+[node name="ActivityButton" type="Button" parent="HUD"]
+offset_left = 620.0
+offset_top = 464.0
+offset_right = 940.0
+offset_bottom = 500.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 16
+
+[node name="ActivityResult" type="Label" parent="HUD"]
+offset_left = 20.0
+offset_top = 470.0
+offset_right = 610.0
+offset_bottom = 500.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 16
