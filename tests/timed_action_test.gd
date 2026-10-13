@@ -103,6 +103,7 @@ func run() -> void:
 	clock.free()
 	# Exercise the real laboratory input and button, including repeat rejection.
 	var lab: Node2D = load("res://scenes/lab/scale_lab.tscn").instantiate()
+	lab.test_storage_root = "user://test_runs/regression_" + str(Time.get_ticks_usec())
 	root.add_child(lab)
 	clock = lab.time_manager
 	clock.set_process(false)
@@ -128,6 +129,7 @@ func run() -> void:
 		lab.queue_free()
 		await process_frame
 		lab = load("res://scenes/lab/scale_lab.tscn").instantiate()
+		lab.test_storage_root = "user://test_runs/regression_" + str(Time.get_ticks_usec())
 		root.add_child(lab)
 		lab.get_node("HUD/ActivityButton").pressed.emit()
 		for frame in range(4):

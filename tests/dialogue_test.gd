@@ -25,6 +25,10 @@ func settle() -> void:
 	# The signal fires before node _process; allow a full HUD update as well.
 	for frame in range(2):
 		await process_frame
+	for node in root.get_children():
+		if node.has_method("change_area"):
+			while node.transitioning:
+				await process_frame
 
 
 func press_key(code: Key, echo: bool = false) -> void:
@@ -82,6 +86,7 @@ func run() -> void:
 	root.mode = Window.MODE_WINDOWED
 	root.size = Vector2i(1280, 720)
 	var lab: Node2D = LAB.instantiate()
+	lab.test_storage_root = "user://test_runs/regression_" + str(Time.get_ticks_usec())
 	root.add_child(lab)
 	var clock: TimeManager = lab.time_manager
 	clock.set_process(false)
@@ -168,6 +173,7 @@ func run() -> void:
 	lab.queue_free()
 	await settle()
 	lab = LAB.instantiate()
+	lab.test_storage_root = "user://test_runs/regression_" + str(Time.get_ticks_usec())
 	root.add_child(lab)
 	lab.change_area(&"street", &"door")
 	await approach_npc(lab)

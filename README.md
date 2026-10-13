@@ -1,58 +1,73 @@
 # Another Life / Outra Vida
 
-Protótipo em **Godot 4.7 / GDScript**, validado na **4.7.2 oficial**, conforme o [GDD](docs/ANOTHER_LIFE_GDD_DIA0.md) e [AGENTS.md](AGENTS.md). Referências à 4.5 no GDD são históricas; veja a [verificação da migração](docs/godot_4_7_migration.md).
+Protótipo em **Godot 4.7 / GDScript**, validado na **4.7.2 oficial**. Cânone e roadmap no [GDD](docs/ANOTHER_LIFE_GDD_DIA0.md); instruções em [AGENTS.md](AGENTS.md); [migração da engine](docs/godot_4_7_migration.md). As referências à 4.5 no GDD são históricas.
 
 ## Entrega atual
 
-**P2-01 — trajeto residencial → Horizonte sinalizado**, sobre o laboratório com sono/salvamentos da P1. Cena principal: `scenes/lab/scale_lab.tscn`.
+**P2-02 — universidade e sala de aula**, com a reformulação urbana solicitada pelo criador. Principal: `scenes/lab/scale_lab.tscn`.
 
-Placas na rua, a cada 640 px do percurso e no pátio orientam a ida e a volta. A medição começa ao sair de casa e termina no retângulo em frente à entrada do prédio; entrar apenas no pátio não conclui o trajeto. O HUD informa chegada e margem em relação às 09h. Trata-se de referência de teste, sem agenda acadêmica, frequência ou bloqueio por atraso. Começar diretamente no percurso produz uma medição identificada como parcial. Saltar datas, carregar, retornar ao quarto ou usar T reinicia a medição.
+- Bairro residencial com praça, casas de proporções variadas, ruas secundárias e um circuito alternativo.
+- Via do rio com curvas, ponte, rampa/escadaria entre taludes e ramificações para locais futuros. O corredor reto anterior foi substituído.
+- Campus com pátio, circuito alternativo, desnível e espaços reservados para biblioteca/café.
+- Hall navegável da Horizonte, guia NPC placeholder, sala de História com carteiras, conversa e ponto de aula. A atividade acadêmica real entra em P2-03; nenhum registro de presença/notas é criado aqui.
+- Fade-out → troca de mapa sob tela preta → fade-in nas portas, carregamento e retorno obrigatório para casa. Durante fade, movimento/interações/ticks naturais ficam bloqueados e a fração do relógio é preservada.
+- Placas somente nos cruzamentos; locais e marcos ajudam a navegar. Nenhuma arte final ou asset externo foi adicionado.
+- Escala preservada: quadro 128×128, corpo 40×56, câmera zoom 1 e fullscreen sem stretch. Resolução maior mostra mais cenário. T continua comparando mobília 32/64 no quarto; o esqueleto urbano usa geometria com dimensões fixas, ainda sem tilemap de arte.
+- Sono, despertador, limite das 04h, calendário clicável, filtros sazonais e saves manual/auto separados continuam disponíveis.
 
-- Personagem placeholder com quadro 128×128, corpo visível 40×56 e colisão nos pés; movimento em oito direções e animação/idle em quatro.
-- Tela cheia inicial, câmera com zoom 1 e stretch desativado: resolução maior mostra mais cenário, mantendo o tamanho em pixels. HUD e painéis acompanham a janela. Não há escalonamento automático para monitores de densidade muito alta.
-- Quarto, rua, percurso de 12.800×1.600 e pátio da Universidade Horizonte de 2.400×1.600, por transição. Edificações, mobília, NPCs e placas são placeholders. Tiles 32/64 para comparação.
-- Tempo externo: 1 segundo real = 1 minuto; interiores e diálogos congelam os ticks naturais. Atividade provisória de 60 minutos avança tempo explicitamente.
-- Calendário com 30 dias/estação, 120 dias/ano e dias da semana contínuos. Debug clicável para avançar data/hora e filtros: primavera rosa, verão azul, outono laranja, inverno branco claro. O filtro afeta o mundo; a interface permanece legível.
-- Cama interativa para sono voluntário, despertador com horas/minutos, opção de salvar antes de dormir e cancelamento do sono voluntário.
-- Às 04h o relógio natural para exatamente no limite, inclusive após um frame muito longo. Sono obrigatório não pode ser cancelado: fora retorna ao quarto e desperta às 12h do mesmo dia; em casa usa o próximo toque do despertador.
-- Salvamentos manual e automático separados; autosave desligado por padrão, habilitado no painel C. Dados inválidos são recusados antes de alterar a partida. Carregar o manual feito ao dormir retoma a escolha de sono anterior ao avanço do relógio.
-- Textos por chaves traduzíveis em pt_BR. Inglês/espanhol permanecem pendentes para a beta.
+Veja o [esqueleto das regiões, referências e imagens](docs/city_layout.md). Layout e locais reservados são **[PROPOSTA]**, não cânone geográfico definitivo. Os desníveis são representados em 2D por patamares, barreiras e passagens de rampa; não existe física 3D, salto ou eixo de altura do personagem.
 
-## Como rodar e testar manualmente
+## Como rodar
 
-Importe `project.godot` na **Godot 4.7**, aguarde a importação e pressione **F5**. Para testar a resolução real da tela, use uma janela de jogo separada do editor; o painel de jogo embutido pode redimensionar sua prévia.
+Importe `project.godot` na **Godot 4.7** e pressione **F5**. Use janela de jogo separada do editor para conferir a resolução real da tela.
 
 | Controle | Ação |
 |---|---|
-| WASD / setas | Caminhar |
-| E | Interagir com porta, NPC ou cama próximos |
+| WASD / setas | Caminhar em oito direções |
+| E | Porta, NPC, cama ou ponto de aula próximos |
 | E / Enter / Esc no diálogo | Avançar / avançar / fechar |
-| T | Comparar tiles 32/64, reposicionando em ponto seguro |
-| F | Mostrar/ocultar quadro 128×128 e colisão |
+| T | Comparação 32/64 e reposicionamento seguro; reinicia a medição |
+| F | Mostrar/ocultar quadro e colisão dos pés |
 | R / botão | Atividade provisória de 60 minutos |
-| C / botão | Calendário de debug, nome para testar persistência, autosave e carregar cada slot |
-| F11 / botão | Alternar tela cheia e janela |
+| C / botão | Calendário debug, nome de teste, autosave e carregar slots |
+| F11 / botão | Alternar fullscreen e janela |
 
-**Sono:** aproxime-se da cama e use E. Ajuste o despertador e escolha salvar e dormir ou dormir sem salvar. Para conferir o limite, saia para a rua, abra C, escolha 03:59 e clique numa data disponível; aguarde um segundo após o salto. O quarto e a oferta de salvamento aparecem às 04h, sem opção de cancelar; o despertar é às 12h. Para conferir em casa, o debug pode posicionar o relógio exatamente às 04h dentro do quarto.
+**Ida:** saia do quarto com E, siga a rua curva pela praça até a passagem ao sul/leste do bairro. Use E para entrar na via do rio. Atravesse a ponte, siga a curva para a rampa ao norte e continue pela rua sinuosa até o acesso do campus no nordeste. No campus, siga o caminho principal pelo pátio e pela rampa até a fachada; E entra na Horizonte.
 
-**Calendário:** selecione ano, estação e horário, depois clique no dia desejado. Datas anteriores ao relógio atual ficam desabilitadas. Abrir o painel congela o tempo; Esc fecha. O salto não executa agendas, atividades ou noites intermediárias. Um destino exatamente às 04h respeita o sono obrigatório. O quadro contém os 30 dias alinhados com seus dias da semana.
+**Faculdade:** explore o hall, converse com o quadrado do guia e siga o corredor à direita e depois para cima. Use E para entrar na sala de História. Caminhe pelo corredor entre as carteiras e use E no ponto de aula. O diálogo informa que a atividade estará disponível em uma próxima versão. Volte pelas mesmas portas. Interiores congelam o relógio natural, com liberdade para andar/conversar.
 
-**Percurso:** saia do quarto usando E na porta; siga a placa à direita da rua e use E na passagem. Caminhe para a direita pelas placas até a passagem da faculdade; use E para entrar no pátio. Siga à direita e depois para cima, conforme a placa, até o retângulo em frente à fachada. O HUD registra horário de chegada, segundos e minutos gastos, além da margem até as 09h. Para voltar, siga as placas do bairro para a esquerda e a indicação de casa na rua. Velocidade atual de 180 px/s; dimensões e escala preservadas. Esperas e menus entram nos segundos decorridos, enquanto os minutos respeitam as pausas. Uma saída às 08h demonstra chegada tardia sem bloquear a exploração. A medição anterior de 68,717 s referia-se só ao percurso grande até o pátio; o teste da P2-01 cobre também rua e entrada do prédio.
+**Orientação:** ruas secundárias chegam aos espaços reservados de comércio, escola, música, fliperama, skate, biblioteca/café e acessos futuros de calçadão/floresta. Esses rótulos não ativam novos sistemas ou mapas completos. O bairro e o campus têm circuitos alternativos, e rio/taludes impedem cortar caminho fora de ponte/rampa. O jogador pode caminhar pelo terreno livre e chegar tarde.
 
-## Salvamentos
+**Medição:** começa na saída de casa e termina diante da entrada do prédio. HUD mostra chegada e margem até as 09h como referência de laboratório. Não simula calendário de aulas, fins de semana/férias ou frequência. Segundos incluem pausas/fades; minutos seguem as pausas naturais. Debug/load/T/retorno ao quarto reiniciam o ensaio; começar diretamente na via do rio identifica um trajeto parcial.
 
-Partida em `user://saves/slot_01/manual.json` e `auto.json`; preferência de autosave em `user://settings.json`. No Windows padrão, `user://` corresponde a `%APPDATA%\Godot\app_userdata\AnotherLife`. Consulte Projeto → Abrir pasta de dados do usuário no editor.
+**Sono/calendário:** E na cama configura o alarme e oferece salvar/dormir. C permite escolher ano/estação/horário e clicar em uma data futura. O salto não simula noites intermediárias; destino exatamente às 04h dispara sono obrigatório. Fora de casa, inclusive dentro da universidade, retorna e acorda às 12h do mesmo dia. Em casa respeita o próximo despertador. Primavera rosa, verão azul, outono laranja e inverno branco são filtros técnicos.
 
-O manual guarda o estado **antes do sono**; o automático, quando habilitado, guarda após acordar e ao trocar de mapa. Iniciar o laboratório não sobrescreve o auto existente nem carrega automaticamente: use C e o botão do slot desejado. Um auto não substitui um manual.
+## Dados e salvamentos
 
-Esquema versão 1: minutos/fração e origem da semana, nome escolhido no campo de teste, área/posição, despertador/contexto do sono e tile. Somente sistemas já implementados são persistidos; futuros estados acadêmicos, sociais e inventário precisarão ampliar o esquema. Escrita em temporário seguida de renomeação na mesma pasta; erro mantém a oferta aberta para tentar novamente ou dormir sem salvar.
+Mapa em `data/world/regions.json`: regiões, ruas com pontos de curva, lotes, praças, água, taludes/rampas, árvores-placeholder, placas, portas e spawns. `WorldLayouts` fornece os mesmos limites ao renderer e ao save; `city_area.gd` materializa os dados. Reinicie a execução após editar o JSON. Personagem/relógio persistem entre regiões, com uma área ativa de cada vez.
+
+| Área | Dimensões |
+|---|---|
+| Quarto | 960×640 |
+| Bairro | 3200×2400 |
+| Via do rio | 6000×3600 |
+| Campus | 3200×2600 |
+| Hall | 1600×1100 |
+| Sala de História | 1400×1000 |
+
+`user://saves/slot_01/manual.json` e `auto.json`; preferência em `user://settings.json`. Windows padrão: `%APPDATA%\Godot\app_userdata\AnotherLife`; consulte Projeto → Abrir pasta de dados do usuário no editor.
+
+Esquema **2**, com leitura/migração do esquema 1. Saves antigos externos são reposicionados na entrada segura da mesma região, pois suas coordenadas pertenciam ao corredor antigo. Nome, relógio/fração, alarme/contexto e tile são conservados; a migração não regrava o arquivo original. Saves atuais mantêm posição exata; novos números fracionários são escritos com precisão completa. Arquivos inválidos são recusados antes de alterar a partida.
+
+Manual guarda estado antes do sono e retoma a escolha ao carregar; auto, opcional/desligado por padrão, guarda ao acordar e trocar de mapa. Um slot não substitui o outro. A inicialização não sobrescreve/carrega automaticamente o auto. Sono/save/fade falhos não devem criar salvamento silencioso; erro do manual permite tentar novamente ou dormir sem salvar. Somente sistemas implementados são persistidos.
 
 ## Validação reproduzível
 
-Com o executável Godot 4.7 no PATH:
+Com Godot 4.7 no PATH:
 
 ```powershell
 godot --headless --path . --editor --quit
+godot --headless --path . --script res://tests/city_university_test.gd
 godot --headless --path . --script res://tests/scale_lab_test.gd
 godot --headless --path . --script res://tests/time_manager_test.gd
 godot --headless --path . --script res://tests/interior_time_test.gd
@@ -60,32 +75,20 @@ godot --headless --path . --script res://tests/timed_action_test.gd
 godot --headless --path . --script res://tests/dialogue_test.gd
 godot --headless --path . --script res://tests/sleep_save_test.gd
 godot --headless --path . --script res://tests/travel_display_test.gd
-godot --headless --path . --script res://tests/signposted_journey_test.gd
 ```
 
-Nesta máquina, substitua `godot` por `& '.\.tools\godot-4.7.2\Godot_v4.7.2-stable_win64_console.exe'`; engine e logs em `test-results/` ignorados pelo Git. Não depende de Steam ou Drowned.
+Nesta máquina: substitua `godot` por `& '.\.tools\godot-4.7.2\Godot_v4.7.2-stable_win64_console.exe'`. Engine e logs de `test-results/` ignorados pelo Git. Todos os runners usam `user://test_runs/`, sem modificar seus slots. Retornam código 1 em caso de falha.
 
-Resultados da entrega P1, em 12/10/2026 (novas validações da P2-01 abaixo):
+O runner urbano padrão usa `Engine.time_scale = 6` para acelerar testes de física/tempo; `-- --walk` conserva a proporção real na primeira ida. Retorno e testes de acessos secundários continuam acelerados. Para renderizar dez capturas, retire `--headless` e acrescente `-- --walk --capture`. `signposted_journey_test.gd` é agora um alias do runner urbano, não uma segunda suíte independente. `travel_display_test.gd` cobre escala/HUD e passagens; a caminhada completa migrou para o runner urbano.
 
-- Sono/save: **51 verificações, zero falhas**, com cama 32/64, 04h dentro/fora, despertador, eventos, cliques de GUI, carregar/salvar, arquivos independentes, preferências, arquivos inválidos, calendário e filtros.
-- Regressões: laboratório **60**, relógio **41**, interiores **42**, atividades **34** e diálogo **30**, todas sem falhas na 4.7.2. Esperas reais curtas confirmam congelamento no quarto/diálogo externo; medições anteriores de 60 segundos não foram repetidas nesta entrega.
-- Exibição/percurso: **12 verificações, zero falhas**, escala/HUD em 960×540, 1366×768 e 1920×1080, física e portas. Acrescente `-- --walk` para rota completa com ticks naturais: **14 verificações, zero falhas** no ensaio executado.
-- Sete capturas renderizadas: runner `travel_display_test.gd` sem `--headless`, acrescentando `-- --capture`: **19 verificações, zero falhas**. Imagens em `docs/screenshots/`, incluindo calendário, sono, tela cheia e estações, inspecionadas visualmente.
+Resultados, duração real, contagens e inspeção de capturas no [registro da entrega](docs/decisions.md). Não foi realizado playtest humano. As medições antigas de 68/79 segundos referiam-se ao mapa reto e permanecem somente no histórico.
 
-Sono/save e percurso usam diretórios isolados em `user://test_runs/`, sem escrever nos slots da partida. Runners retornam código 1 em caso de falha. Caminhada completa leva aproximadamente 70 segundos. Não foi realizado playtest humano.
-
-### Validação da P2-01
-
-`signposted_journey_test.gd`: caminhada com física real e transições por E, placas de ida/volta, chegada antes das 09h, retorno, partida tardia, escala 32/64 e reinício da medição por debug/load/T. O runner padrão acelera a física e o relógio com `Engine.time_scale = 8` para repetir os percursos; seus segundos de parede não representam a proporção real do jogo.
-
-Acrescente `-- --walk` para executar a primeira ida na proporção real 1s = 1 minuto. O retorno e a saída tardia continuam acelerados. Para capturas, rode sem `--headless` e acrescente `-- --walk --capture`: placas da rua/percurso/pátio e chegada em 1280×720 e 960×540. Testes usam `user://test_runs/`, sem alterar seus saves. Resultados da entrega em [decisions.md](docs/decisions.md).
-
-Entrega de 13/10/2026: **59 verificações padrão** e **65 no ensaio renderizado**, zero falhas; **153 verificações de regressão**, zero falhas. Ida em tempo real: **79,129 s**, chegada **07:19**, **101 minutos antes das 09h**, mantendo a proporção 1s = 1 minuto. As cinco capturas foram inspecionadas, e o HUD cabe em três linhas em 960×540. Importação/editor headless na Godot 4.7.2 sem erros; sem playtest humano.
+Validação de 13/10/2026: **90 verificações urbanas + 270 de regressão = 360**, zero falhas. Variante renderizada: **100 verificações**, zero falhas, dez capturas inspecionadas. Ida na proporção real: **106,445 s**, **+105 minutos**, chegada **07:45**, **75 minutos antes das 09h**. O ensaio padrão usa aceleração; suas durações de parede não representam o jogo. Importação/editor headless na Godot 4.7.2 sem erros.
 
 ## Hipóteses e próximo passo
 
-**[PROPOSTA]** Início na primavera 1, ano 1, 06h, segunda-feira; origem da semana configurável. Alarme inicial 06h; se coincidir com o instante de deitar, vale o toque do dia seguinte. Ao acordar, a fração natural reinicia em zero. Atraso restante de um frame que atinge 04h é descartado. Autosave em transição/despertar e campo de nome no debug são UX de laboratório.
+**[PROPOSTA]** Início na primavera 1, ano 1, 06h, segunda-feira; origem da semana configurável. Alarme inicial 06h; igual ao instante de deitar vale no dia seguinte. Fração natural reinicia ao acordar; atraso excedente do frame que atinge 04h é descartado. Autosave em transição/despertar e nome no debug são UX de laboratório.
 
-Ações comuns que terminariam às 04h ou depois continuam recusadas antes de iniciar, conforme P1-05. **[PENDENTE]** UX definitiva de atividades no limite e consequências do sono curto; não foi inventado efeito de fadiga nem barra de energia. Alarmes exatamente às 04h seguem o horário selecionado; esclarecer esse caso de fronteira antes do balanceamento final.
+**[PENDENTE]** Tile definitivo, arte, nomes/layout final dos locais, consequências do sono curto, fronteira de alarme exatamente às 04h e UX de atividades que atingiriam o limite (ainda recusadas previamente). Textos pt_BR por chaves; en/es entram antes da beta. Sem energia/crafting. Drowned não foi alterado; P0-03 depende de acesso explícito.
 
-Próxima tarefa: **P2-02 — cena da universidade e sala de aula**. O percurso/pátio permanecem provisórios; chegar ao marcador não entra em um interior nem inicia aula. Grade/presença ficam para P2-03. A referência das 09h usada na medição não simula fins de semana/férias, pois esses calendários pertencem a tarefas posteriores. **P0-03 permanece pendente** de acesso explícito ao Drowned; seu repositório não foi alterado. Veja o [registro de decisões](docs/decisions.md).
+Próxima tarefa: **P2-03 — agenda acadêmica mínima manhã/tarde**, avanço das aulas e presença/falta. Horários provisórios do GDD não devem ser promovidos a cânone sem decisão.
