@@ -265,3 +265,52 @@ Filtros no mesmo enquadramento do pátio: [primavera](screenshots/season_0.png),
 ### Próxima tarefa
 
 **P2-01 — trajeto residencial → Horizonte sinalizado**, consolidando o protótipo atual para chegar a pé à aula das 09h em ritmo viável. Nenhuma dimensão do laboratório foi promovida a cânone. P0-03/Drowned, origem da semana, conteúdo final, en/es e balanceamento permanecem pendentes.
+
+---
+
+## P2-01 — trajeto residencial → Horizonte sinalizado — 13/10/2026
+
+**Critério:** chegar a pé para a referência de aula das 09h em ritmo viável. Esta entrega consolida o mapa grande solicitado na P1, preservando dimensões, velocidade e escala. Não implementa a sala de aula (P2-02), grade/frequência (P2-03), professor ou novos NPCs.
+
+### Arquivos e comportamento
+
+- `scripts/world/wayfinding_sign.gd` e `scenes/world/wayfinding_sign.tscn`: placa reutilizável com duas chaves traduzíveis, sem colisão de bloqueio. Instâncias na rua e no pátio; dezenove placas a cada 640 px no percurso, orientando Horizonte à direita e bairro à esquerda.
+- `scripts/world/travel_lab_area.gd`: substitui a sinalização antiga desenhada diretamente pelo componente reutilizável. Rebuild de tiles não duplica placas. Dimensões 12.800×1.600 e 2.400×1.600 preservadas.
+- `scripts/world/journey_destination.gd` e `scenes/world/journey_destination.tscn`: destino Area2D, evento de chegada apenas para o jogador e retângulo placeholder em frente à fachada, posição (1504,680). Não entra no prédio nem bloqueia a exploração.
+- `scripts/world/walking_journey.gd`: medição diagnóstica desacoplada de cenas, com origem, segundos monotônicos, minutos do mundo, horário de chegada e margem até as 09h do dia da saída. Resultado estruturado em IDs/valores, traduzido apenas ao apresentar.
+- `scripts/lab/scale_lab.gd`: começa ao sair do quarto, continua pela rua/percurso/pátio e termina ao tocar o destino. Entrada direta no percurso inicia ensaio identificado como parcial. Reentrar no destino não sobrescreve o resultado. Voltar ao quarto, saltar calendário, carregar ou usar T reinicia a medição; a medição não é persistida como estado de gameplay.
+- `scenes/world/street.tscn` e `campus.tscn`: direções de ida/volta e marcador de chegada; caminhos existentes permanecem acessíveis em ambos os sentidos.
+- `localization/lab.csv` e tradução pt_BR: novos textos por chave. `tests/signposted_journey_test.gd`: ida inteira e volta usando movimento/física e teclado E reais, pontualidade, atraso, resets, saves e escala. `tests/travel_display_test.gd`: entrar no pátio agora mantém a medição ativa até o prédio.
+- README/AGENTS atualizados com controles, escopo e próxima tarefa. Capturas `docs/screenshots/signposted_*.png`. Fonte do cabeçalho reduzida para 16 em larguras abaixo de 1100, evitando quebra sobre os controles em 960×540; câmera e personagem continuam em escala 1.
+
+### Como rodar
+
+Godot 4.7, F5. Saia do quarto com E, siga a placa à direita da rua e use E na passagem. Continue para a direita no percurso, entre no pátio com E, siga à direita e depois para cima até o retângulo em frente à fachada. Confira no HUD o horário e a margem até as 09h. Volte para a esquerda seguindo as placas do bairro e, na rua, siga a indicação de casa e use E na porta.
+
+Runner: `godot --headless --path . --script res://tests/signposted_journey_test.gd`. Padrão acelera relógio e física com `Engine.time_scale = 8` para repetir os trajetos. Acrescente `-- --walk` para a primeira ida na proporção real de produção; retorno e saída tardia continuam acelerados. Para cinco capturas, retire `--headless` e acrescente `-- --walk --capture`.
+
+### Validações e limites
+
+Godot **4.7.2.stable.official.ed1daf0bf**. Runner padrão: **59 verificações, zero falhas**, incluindo caminhada de ida/volta sem teletransportes, overlap físico nas quatro passagens, chegada antes das 09h, saída tardia sem bloqueios, alinhamento das placas, marcador do prédio, não duplicação do resultado, reinício por debug/load/T, tiles e saves em diretório isolado. O runner só reposiciona o personagem ao preparar capturas de enquadramento, após concluir a medição.
+
+Regressões executadas nesta entrega: laboratório **60**, diálogo **30**, sono/save **51** e exibição/percurso **12**, todas sem falhas (**153 verificações**). O teste de exibição foi repetido depois do ajuste de fonte. As regressões históricas de relógio/atividades/interiores não foram repetidas porque seus módulos não foram alterados; resultados anteriores permanecem no registro da P1. Importação final e ensaio renderizado registrados abaixo.
+
+**[PROPOSTA]** Placas a cada 640 px, seus tamanhos/posições, corredor reto e marcador são layout técnico para testar caminhada. Não promovem o mapa a cânone nem definem arte final. O retângulo de chegada termina o teste ao tocar sua área, sem exigir interação extra.
+
+**[PENDENTE]** Layout final da cidade/campus, tile definitivo, arte de placas e possibilidade futura de transporte. Segundos decorridos incluem pausas e hesitações; minutos seguem as regras de relógio. Medição até as 09h é referência diária de laboratório, não afirma que há aula em fim de semana/férias nem registra presença/falta. O jogador pode chegar tarde e continuar explorando. Escala 128×128/zoom 1 e regras de sono/save preservadas; Drowned não foi alterado.
+
+Importação/editor headless final sem erros. Ensaio renderizado na proporção real: **79,129 segundos da saída de casa até o ponto de entrada**, avanço de **79 minutos**, chegada **07:19**, **101 minutos de margem até 09h**. Distância percorrida pelo runner desde o spawn inicial do quarto: 14.300,4 px (inclui o trecho interior anterior ao início da medição externa). Cinco capturas e verificação adicional do cabeçalho 960×540: **65 verificações, zero falhas**. São variantes do mesmo runner, não somar a contagem de 65 à de 59 como testes independentes.
+
+As imagens finais foram inspecionadas: cabeçalho em três linhas sem sobrepor os botões em 960×540, placa da entrada acima do rodapé, label do destino acima do personagem, placas de ida/volta legíveis. O ensaio real foi repetido após corrigir a sobreposição do cabeçalho e a posição da placa encontradas nas primeiras capturas. Sem playtest humano. Logs em `test-results/journey-*.log`, ignorados pelo Git. Nos outros trajetos do runner, a aceleração é somente do teste e é restaurada antes de encerrar; produção mantém a proporção canônica.
+
+![Placas na rua residencial](screenshots/signposted_street.png)
+
+![Percurso com placas de ida e volta](screenshots/signposted_route.png)
+
+![Chegada à entrada da Horizonte com margem até as 09h](screenshots/signposted_arrival.png)
+
+[Chegada em 960×540](screenshots/signposted_arrival_960.png) · [Placas no pátio](screenshots/signposted_campus.png)
+
+### Próxima tarefa
+
+**P2-02 — cena da universidade e sala de aula:** entrar, explorar, conversar e acessar o ponto de aula. Agenda acadêmica/frequência continua separada na P2-03. Não antecipar avaliação, elenco completo ou outros mapas nesta próxima etapa.

@@ -21,9 +21,7 @@ var sleep_manager: SleepManager
 var save_manager: SaveManager
 var sleep_panel: SleepPanel
 var debug_panel: CalendarDebugPanel
-var travel_start_minutes: int = -1
-var travel_start_usec: int = 0
-var travel_result: String = ""
+var journey := WalkingJourney.new()
 @onready var player: CharacterBody2D = $Player
 @onready var time_manager: TimeManager = $TimeManager
 @onready var dialogue_panel: DialoguePanel = $HUD/DialoguePanel
@@ -103,6 +101,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if target != null:
 			target.interact(player)
 	elif event.is_action_pressed("compare_scale") and not event.is_echo():
+		journey.reset() # Tile comparison teleports, invalidating a walking trial.
 		tile_size = 64 if tile_size == 32 else 32
 		area.tile_size = tile_size
 		area.rebuild()
@@ -142,6 +141,7 @@ func request_transition(target: StringName, spawn: StringName) -> void:
 
 func change_area(target: StringName, spawn: StringName) -> void:
 	var had_area := is_instance_valid(area)
+	var previous_area := area_id
 	if not AREAS.has(target):
 		push_error("Unknown laboratory area: " + String(target))
 		transitioning = false
@@ -172,6 +172,9 @@ func change_area(target: StringName, spawn: StringName) -> void:
 			target_node.dialogue_requested.connect(_open_dialogue)
 		if target_node.has_signal("sleep_requested"):
 			target_node.sleep_requested.connect(func() -> void: sleep_manager.request())
+	for destination in get_tree().get_nodes_in_group("journey_destinations"):
+		if area.is_ancestor_of(destination):
+			destination.reached.connect(_on_journey_arrival)
 	player.position = marker.position
 	player.velocity = Vector2.ZERO
 	player.facing = &"down" if target == &"street" else &"up"
@@ -182,13 +185,13 @@ func change_area(target: StringName, spawn: StringName) -> void:
 	camera.zoom = Vector2.ONE
 	camera.reset_smoothing()
 	transitioning = false
-	if target == &"route" and spawn == &"door":
-		travel_start_minutes = time_manager.world_minutes
-		travel_start_usec = Time.get_ticks_usec()
-		travel_result = ""
-	elif target == &"campus" and travel_start_minutes >= 0:
-		travel_result = tr("TRAVEL_RESULT") % [(Time.get_ticks_usec() - travel_start_usec) / 1_000_000.0, time_manager.world_minutes - travel_start_minutes]
-		travel_start_minutes = -1
+	if target == &"room":
+		journey.reset()
+	elif not loading_slot:
+		if previous_area == &"room" and target == &"street":
+			journey.begin(time_manager.world_minutes, &"home")
+		elif target == &"route" and spawn == &"door" and not journey.active:
+			journey.begin(time_manager.world_minutes, &"route")
 	if had_area and not loading_slot and not sleep_manager.pending:
 		_autosave()
 
@@ -222,8 +225,7 @@ func debug_jump(minutes: int) -> bool:
 	if sleep_manager.pending or minutes < time_manager.world_minutes:
 		return false
 	debug_panel.close()
-	travel_start_minutes = -1
-	travel_result = ""
+	journey.reset()
 	if not time_manager.restore_clock(minutes, 0.0, time_manager.weekday_offset):
 		return false
 	if minutes % 1440 == 240:
@@ -291,8 +293,7 @@ func load_slot(kind: String) -> bool:
 	time_manager.sleep_pending = sleep_manager.pending
 	change_area(StringName(state.player.area), &"door")
 	player.position = Vector2(state.player.x, state.player.y)
-	travel_start_minutes = -1
-	travel_result = ""
+	journey.reset()
 	loading_slot = false
 	if sleep_manager.pending:
 		sleep_panel.open()
@@ -319,6 +320,7 @@ func _toggle_fullscreen() -> void:
 
 func _layout_hud() -> void:
 	var size := get_viewport_rect().size
+	$HUD/Info.add_theme_font_size_override("font_size", 16 if size.x < 1100 else 18)
 	$HUD/Panel.size.x = size.x
 	$HUD/Info.size.x = size.x - 40
 	$HUD/ClockPanel.position = Vector2(0, size.y - 32)
@@ -349,6 +351,23 @@ func _on_minute_changed(_absolute_minutes: int) -> void:
 	_update_clock()
 
 
+func _on_journey_arrival(body: Node2D) -> void:
+	if body == player:
+		journey.finish(time_manager.world_minutes)
+
+
+func _journey_text() -> String:
+	if journey.active:
+		return tr("JOURNEY_PROGRESS") % [tr("JOURNEY_HOME" if journey.origin == &"home" else "JOURNEY_PARTIAL"), journey.elapsed_seconds(), time_manager.world_minutes - journey.start_minutes]
+	if not journey.result.is_empty():
+		var result: Dictionary = journey.result
+		var arrival: int = result.arrival_minutes
+		var margin: int = result.margin_minutes
+		var timing := tr("JOURNEY_EARLY") % margin if margin >= 0 else tr("JOURNEY_LATE") % -margin
+		return tr("JOURNEY_RESULT") % [tr("JOURNEY_HOME" if result.origin == &"home" else "JOURNEY_PARTIAL"), arrival % 1440 / 60, arrival % 60, result.seconds, result.minutes, timing]
+	return ""
+
+
 func _update_clock() -> void:
 	var calendar := time_manager.get_calendar()
 	var status := tr("CLOCK_RUNNING") if time_manager.running else tr("CLOCK_STOPPED")
@@ -361,7 +380,6 @@ func _process(_delta: float) -> void:
 	var target := _interaction_target() if not _modal_open() else null
 	var hint := tr(target.hint_key) if target != null else ""
 	$HUD/Info.text = tr("LAB_TITLE") + " | " + location + " | " + tr("LAB_SCALE") % tile_size + "\n" + tr("LAB_CONTROLS") + "\n" + hint
-	if travel_start_minutes >= 0:
-		$HUD/Info.text += tr("TRAVEL_PROGRESS") % [player.position.x / 1000.0, (Time.get_ticks_usec() - travel_start_usec) / 1_000_000.0, time_manager.world_minutes - travel_start_minutes]
-	elif not travel_result.is_empty():
-		$HUD/Info.text += travel_result
+	var journey_text := _journey_text()
+	if not journey_text.is_empty():
+		$HUD/Info.text += (" · " if not hint.is_empty() else "") + journey_text

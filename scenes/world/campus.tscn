@@ -1,6 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=5 format=3]
 [ext_resource type="Script" path="res://scripts/world/travel_lab_area.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/world/door.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/world/wayfinding_sign.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/world/journey_destination.tscn" id="4"]
 
 [node name="Campus" type="Node2D"]
 script = ExtResource("1")
@@ -14,6 +16,17 @@ target_area = &"route"
 spawn_id = &"campus"
 hint_key = &"ROUTE_HOME"
 label_key = &"ROUTE_HOME"
+
+[node name="Directions" parent="." instance=ExtResource("3")]
+position = Vector2(640, 980)
+line_keys = Array[StringName]([&"WAYFIND_HORIZONTE", &"WAYFIND_HOME"])
+
+[node name="EntranceDirections" parent="." instance=ExtResource("3")]
+position = Vector2(1504, 870)
+line_keys = Array[StringName]([&"WAYFIND_ENTRANCE_UP", &"WAYFIND_HOME"])
+
+[node name="EntranceArrival" parent="." instance=ExtResource("4")]
+position = Vector2(1504, 680)
 
 [node name="Spawns" type="Node2D" parent="."]
 [node name="door" type="Marker2D" parent="Spawns"]

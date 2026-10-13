@@ -87,7 +87,7 @@ func run() -> void:
 		await settle()
 	else:
 		await interact(lab, "CampusDoor")
-	check(lab.area_id == &"campus" and camera.limit_right == 2400 and clock.running and not lab.travel_result.is_empty(), "campus arrival preserves date and records trip duration")
+	check(lab.area_id == &"campus" and camera.limit_right == 2400 and clock.running and lab.journey.active, "campus arrival preserves date and keeps walking trial active until the building entrance")
 	await interact(lab, "Door")
 	check(lab.area_id == &"route" and lab.player.position == Vector2(12560, 800), "campus exit returns to correct end of the route")
 	await interact(lab, "Door")
