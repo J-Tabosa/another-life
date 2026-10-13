@@ -5,6 +5,8 @@ const AREAS := {
 	&"street": preload("res://scenes/world/street.tscn"),
 	&"route": preload("res://scenes/world/route.tscn"),
 	&"campus": preload("res://scenes/world/campus.tscn"),
+	&"university": preload("res://scenes/world/university.tscn"),
+	&"classroom": preload("res://scenes/world/classroom.tscn"),
 }
 const SEASON_KEYS := ["SEASON_SPRING", "SEASON_SUMMER", "SEASON_AUTUMN", "SEASON_WINTER"]
 const WEEKDAY_KEYS := ["WEEKDAY_MON", "WEEKDAY_TUE", "WEEKDAY_WED", "WEEKDAY_THU", "WEEKDAY_FRI", "WEEKDAY_SAT", "WEEKDAY_SUN"]
@@ -22,6 +24,7 @@ var save_manager: SaveManager
 var sleep_panel: SleepPanel
 var debug_panel: CalendarDebugPanel
 var journey := WalkingJourney.new()
+var fade: SceneFade
 @onready var player: CharacterBody2D = $Player
 @onready var time_manager: TimeManager = $TimeManager
 @onready var dialogue_panel: DialoguePanel = $HUD/DialoguePanel
@@ -29,6 +32,8 @@ var journey := WalkingJourney.new()
 
 func _ready() -> void:
 	_setup_inputs()
+	fade = SceneFade.new()
+	add_child(fade)
 	save_manager = SaveManager.new()
 	if not test_storage_root.is_empty():
 		save_manager.storage_root = test_storage_root.path_join("saves")
@@ -133,10 +138,25 @@ func _run_test_activity() -> void:
 
 
 func request_transition(target: StringName, spawn: StringName) -> void:
-	if transitioning or _modal_open():
+	if transitioning or _modal_open() or not _valid_destination(target, spawn):
 		return
 	transitioning = true
-	change_area.call_deferred(target, spawn)
+	_sync_controls()
+	_transition_to.call_deferred(target, spawn)
+
+
+func _valid_destination(target: StringName, spawn: StringName) -> bool:
+	if not AREAS.has(target):
+		return false
+	return spawn in [&"start", &"door", &"bed"] if target == &"room" else WorldLayouts.region(String(target)).spawns.has(String(spawn))
+
+
+func _transition_to(target: StringName, spawn: StringName) -> void:
+	transitioning = true
+	_sync_controls()
+	await fade.play(func() -> void: change_area(target, spawn))
+	transitioning = false
+	_sync_controls()
 
 
 func change_area(target: StringName, spawn: StringName) -> void:
@@ -147,6 +167,8 @@ func change_area(target: StringName, spawn: StringName) -> void:
 		transitioning = false
 		return
 	var next_area: Node2D = AREAS[target].instantiate()
+	if next_area.has_method("prepare"):
+		next_area.prepare()
 	var marker := next_area.get_node_or_null("Spawns/" + String(spawn)) as Marker2D
 	if marker == null:
 		push_error("Unknown laboratory spawn: " + String(spawn))
@@ -184,7 +206,7 @@ func change_area(target: StringName, spawn: StringName) -> void:
 	camera.limit_bottom = int(area.map_size.y)
 	camera.zoom = Vector2.ONE
 	camera.reset_smoothing()
-	transitioning = false
+	transitioning = fade.active
 	if target == &"room":
 		journey.reset()
 	elif not loading_slot:
@@ -212,7 +234,7 @@ func _sync_controls() -> void:
 
 
 func _modal_open() -> bool:
-	return dialogue_panel.active or sleep_manager.pending or debug_panel.visible
+	return transitioning or dialogue_panel.active or sleep_manager.pending or debug_panel.visible
 
 
 func _open_debug() -> void:
@@ -243,7 +265,7 @@ func _on_sleep_limit() -> void:
 
 func _show_sleep() -> void:
 	if sleep_manager.forced and sleep_manager.was_outside:
-		change_area(&"room", &"bed")
+		await _transition_to(&"room", &"bed")
 	sleep_panel.open()
 	_sync_controls()
 
@@ -274,12 +296,22 @@ func snapshot() -> Dictionary:
 
 
 func load_slot(kind: String) -> bool:
-	if sleep_manager.pending:
+	if sleep_manager.pending or transitioning:
 		return false
 	var state := save_manager.load_slot(kind)
 	if state.is_empty():
 		$HUD/ActivityResult.text = tr("LOAD_FAILED")
 		return false
+	transitioning = true
+	_sync_controls()
+	await fade.play(func() -> void: _restore_state(state))
+	transitioning = false
+	_sync_controls()
+	$HUD/ActivityResult.text = tr("LOAD_MIGRATED" if state.get("migrated_from_legacy", false) else "LOAD_OK")
+	return true
+
+
+func _restore_state(state: Dictionary) -> void:
 	loading_slot = true
 	dialogue_panel.close()
 	debug_panel.close()
@@ -298,8 +330,6 @@ func load_slot(kind: String) -> bool:
 	if sleep_manager.pending:
 		sleep_panel.open()
 	_sync_controls()
-	$HUD/ActivityResult.text = tr("LOAD_OK")
-	return true
 
 
 func _autosave() -> void:
@@ -376,7 +406,7 @@ func _update_clock() -> void:
 
 
 func _process(_delta: float) -> void:
-	var location := tr({&"room": "LAB_ROOM", &"street": "LAB_STREET", &"route": "LAB_ROUTE", &"campus": "LAB_CAMPUS"}[area_id])
+	var location := tr("LAB_ROOM") if area_id == &"room" else tr(WorldLayouts.region(String(area_id)).title)
 	var target := _interaction_target() if not _modal_open() else null
 	var hint := tr(target.hint_key) if target != null else ""
 	$HUD/Info.text = tr("LAB_TITLE") + " | " + location + " | " + tr("LAB_SCALE") % tile_size + "\n" + tr("LAB_CONTROLS") + "\n" + hint

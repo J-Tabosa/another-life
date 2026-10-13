@@ -24,6 +24,10 @@ func settle() -> void:
 		await physics_frame
 	for frame in range(2):
 		await process_frame
+	for node in root.get_children():
+		if node.has_method("change_area"):
+			while node.transitioning:
+				await process_frame
 
 
 func press_key(code: Key) -> void:
@@ -85,6 +89,7 @@ func run() -> void:
 	lab.change_area(&"street", &"door")
 	events.clear()
 	clock._process(600.0)
+	await settle()
 	check(clock.world_minutes == 1680 and events == [1680], "large outdoor frame stops exactly at 04h without skipping sleep")
 	check(sleeper.pending and sleeper.forced and sleeper.was_outside and lab.area_id == &"room", "04h outside returns to home and records compulsory sleep context")
 	check(lab.sleep_panel.visible and not lab.sleep_panel.cancel_button.visible and not lab.player.controls_enabled, "compulsory sleep offers save and blocks cancellation/movement")
@@ -125,7 +130,7 @@ func run() -> void:
 	var manual := saves.load_slot("manual")
 	check(not manual.is_empty() and manual.world.minutes == 3 * 1440 + 23 * 60 + 30 and manual.sleep.pending, "manual save captures pre-sleep state and pending sleep")
 	check(clock.world_minutes == 4 * 1440 + 7 * 60 + 15, "save-and-sleep wakes at the configured alarm")
-	check(lab.load_slot("manual") and sleeper.pending and not sleeper.forced and lab.protagonist_name == "João de teste", "manual load restores name, alarm and pre-sleep choice")
+	check((await lab.load_slot("manual")) and sleeper.pending and not sleeper.forced and lab.protagonist_name == "João de teste", "manual load restores name, alarm and pre-sleep choice")
 	lab.sleep_panel.skip_button.pressed.emit()
 	var manual_bytes := FileAccess.get_file_as_bytes(saves.storage_root.path_join("manual.json"))
 	check(saves.set_autosave(true), "autosave preference persists separately")
@@ -135,17 +140,17 @@ func run() -> void:
 	var auto := saves.load_slot("auto")
 	check(not auto.is_empty() and not auto.sleep.pending and auto.world.minutes == clock.world_minutes, "enabled autosave captures the awakened state")
 	check(FileAccess.get_file_as_bytes(saves.storage_root.path_join("manual.json")) == manual_bytes, "autosave never overwrites manual file")
-	clock.restore_clock(clock.world_minutes + 60, 0.5, 6)
+	clock.restore_clock(clock.world_minutes + 60, 0.1234567890123456, 6)
 	lab.change_area(&"route", &"door")
 	lab.player.position = Vector2(700, 800)
 	check(saves.save_slot("auto", lab.snapshot()), "autosave can persist position and fractional outdoor time")
 	var saved_minutes := clock.world_minutes
 	saves.set_autosave(false)
 	lab.change_area(&"room", &"door")
-	check(lab.load_slot("auto") and lab.area_id == &"route" and lab.player.position == Vector2(700, 800) and clock.world_minutes == saved_minutes and clock.get_clock_state().fraction == 0.5 and clock.weekday_offset == 6, "load restores map, exact position, fraction and weekday origin")
+	check((await lab.load_slot("auto")) and lab.area_id == &"route" and lab.player.position == Vector2(700, 800) and clock.world_minutes == saved_minutes and clock.get_clock_state().fraction == 0.1234567890123456 and clock.weekday_offset == 6, "load restores map, exact position, full-precision fraction and weekday origin")
 	saves.set_autosave(true)
 	check(saves.save_slot("auto", auto), "existing auto file is replaced successfully through temporary write")
-	check(lab.load_slot("auto") and clock.world_minutes == int(auto.world.minutes), "autosave loads independently from manual")
+	check((await lab.load_slot("auto")) and clock.world_minutes == int(auto.world.minutes), "autosave loads independently from manual")
 	var auto_bytes := FileAccess.get_file_as_bytes(saves.storage_root.path_join("auto.json"))
 	var other := new_lab()
 	check(other.save_manager.autosave_enabled and FileAccess.get_file_as_bytes(saves.storage_root.path_join("auto.json")) == auto_bytes, "new scene loads preference without overwriting existing auto on startup")
@@ -168,7 +173,7 @@ func run() -> void:
 	var file := FileAccess.open(saves.storage_root.path_join("auto.json"), FileAccess.WRITE)
 	file.store_string("{broken json")
 	file.close()
-	check(not lab.load_slot("auto") and lab.snapshot() == before, "corrupt load preserves the live game state")
+	check(not (await lab.load_slot("auto")) and lab.snapshot() == before, "corrupt load preserves the live game state")
 	check(not saves.save_slot("../manual", before), "slot names cannot escape separate save paths")
 	# Calendar grid, seasons, week continuity and forward-only debug jump.
 	lab._open_debug()
@@ -188,10 +193,11 @@ func run() -> void:
 		check(lab.get_node("SeasonFilter/Tint").color == lab.SEASON_FILTERS[season], "season %d uses the requested visual filter" % season)
 	# A debug jump to 04h still presents compulsory sleep at the destination.
 	lab.debug_jump(400 * 1440 + 240)
+	await settle()
 	check(sleeper.pending and sleeper.was_outside and lab.area_id == &"room", "debug destination at 04h respects forced outside sleep")
 	await click_button(lab.sleep_panel.save_button)
 	check(clock.world_minutes == 400 * 1440 + 720, "debug sleep returns 12h on the selected day")
-	check(lab.load_slot("manual") and sleeper.pending and sleeper.forced and sleeper.was_outside and lab.sleep_panel.visible, "loading compulsory pre-sleep save restores outside context and the save choice")
+	check((await lab.load_slot("manual")) and sleeper.pending and sleeper.forced and sleeper.was_outside and lab.sleep_panel.visible, "loading compulsory pre-sleep save restores outside context and the save choice")
 	await press_key(KEY_ESCAPE)
 	check(sleeper.pending, "loaded compulsory sleep still cannot be cancelled")
 	lab.sleep_panel.skip_button.pressed.emit()

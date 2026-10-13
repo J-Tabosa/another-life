@@ -72,3 +72,52 @@ JOURNEY_PROGRESS,%s · %.1fs · +%d min · referência 09h
 JOURNEY_RESULT,%s · %02d:%02d · %.1fs / +%d min · %s
 JOURNEY_EARLY,%d min antes das 09h (teste)
 JOURNEY_LATE,%d min depois das 09h (teste)
+CITY_RESIDENTIAL,Fliegen · bairro residencial
+CITY_RIVERSIDE,Fliegen · via do rio e colina
+CITY_CAMPUS,Horizonte · campus
+CITY_UNIVERSITY,Horizonte · hall
+CITY_CLASSROOM,Horizonte · sala de História
+CITY_HOME,Casa · PLACEHOLDER
+CITY_SHOP_RESERVE,Comércio · reservado
+CITY_SCHOOL_RESERVE,Escola · reservado
+CITY_MUSIC_RESERVE,Música · reservado
+CITY_COAST_RESERVE,Calçadão · acesso reservado
+CITY_SQUARE,Praça · PLACEHOLDER
+CITY_FOREST_RESERVE,Floresta · acesso reservado
+CITY_SKATE_RESERVE,Skate · reservado
+CITY_ARCADE_RESERVE,Fliperama · reservado
+CITY_HILL,Subida / descida · rampa
+CITY_BRIDGE,Ponte do percurso
+CITY_HORIZONTE,Universidade Horizonte · PLACEHOLDER
+CITY_LIBRARY_RESERVE,Biblioteca · reservado
+CITY_CAFE_RESERVE,Café · reservado
+CITY_COURTYARD,Pátio de convivência
+CITY_HISTORY,História · sala PLACEHOLDER
+CITY_COMMON,Convivência · PLACEHOLDER
+CITY_LESSON_PLACEHOLDER,Ponto de aula · PLACEHOLDER
+CITY_SIGN_CAMPUS_DOWN,Horizonte ↓
+CITY_SIGN_COAST_LEFT,← Calçadão · reservado
+CITY_SIGN_HOME_LEFT,← Bairro residencial
+CITY_SIGN_HILL_UP,Horizonte ↑ pela rampa
+CITY_SIGN_FOREST_UP,Floresta ↑ · reservado
+CITY_SIGN_CAMPUS_RIGHT,Horizonte →
+CITY_SIGN_HORIZONTE_UP,Horizonte ↑
+CITY_SIGN_HALL_LEFT,← Entrada principal
+CITY_SIGN_CAFE_UP,Café ↑ · reservado
+CITY_SIGN_HISTORY_UP,História ↑ à direita
+CITY_SIGN_EXIT_DOWN,Saída ↓
+CITY_ENTER_HOME,E — entrar em casa
+CITY_ENTER_ROUTE,E — via do rio
+CITY_RETURN_NEIGHBORHOOD,E — bairro residencial
+CITY_ENTER_CAMPUS,E — entrar no campus
+CITY_RETURN_RIVER,E — voltar pela via do rio
+CITY_ENTER_HALL,E — entrar na Horizonte
+CITY_EXIT_HALL,E — sair para o campus
+CITY_ENTER_CLASSROOM,E — sala de História
+CITY_EXIT_CLASSROOM,E — voltar ao hall
+CITY_ACCESS_LESSON,E — acessar ponto de aula
+CITY_GUIDE,Guia · NPC PLACEHOLDER
+CITY_GUIDE_01,Bem-vindo à Horizonte. A sala de História fica no corredor à direita e depois acima.
+CITY_GUIDE_02,Pode explorar o hall e a sala com calma. O tempo natural fica parado aqui dentro.
+CITY_LESSON_01,Esta é a sala de História. A aula estará disponível em uma próxima versão do protótipo.
+LOAD_MIGRATED,Save anterior carregado na entrada segura do novo mapa.

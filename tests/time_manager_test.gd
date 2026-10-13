@@ -82,6 +82,7 @@ func run() -> void:
 	clock.free()
 	# Production scene wiring: clock survives area replacement and controls HUD.
 	var lab: Node2D = load("res://scenes/lab/scale_lab.tscn").instantiate()
+	lab.test_storage_root = "user://test_runs/regression_" + str(Time.get_ticks_usec())
 	root.add_child(lab)
 	var active_clock: TimeManager = lab.time_manager
 	active_clock.set_process(false)

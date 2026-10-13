@@ -314,3 +314,64 @@ As imagens finais foram inspecionadas: cabeçalho em três linhas sem sobrepor o
 ### Próxima tarefa
 
 **P2-02 — cena da universidade e sala de aula:** entrar, explorar, conversar e acessar o ponto de aula. Agenda acadêmica/frequência continua separada na P2-03. Não antecipar avaliação, elenco completo ou outros mapas nesta próxima etapa.
+
+---
+
+## P2-02 — universidade e esqueleto urbano — 13/10/2026
+
+**Escopo autorizado:** próxima tarefa (universidade/sala) e reformulação explícita do mapeamento pelo criador: ruas curvas, subidas/descidas, acessos futuros, menor repetição de placas e fade-out/in. A geometria anterior da P2-01 foi substituída; suas capturas/medições permanecem registro histórico, não a planta vigente.
+
+### Entrega e arquivos
+
+- `data/world/regions.json`: bairro 3200×2400, via do rio 6000×3600, campus 3200×2600, hall 1600×1100 e sala 1400×1000. Quarto 960×640 preservado. Dados incluem vias principais/secundárias, curvas, lotes, praças, patamares/taludes/rampas, água/ponte, decoração, labels traduzíveis, portas/spawns, guia, destino e ponto de aula.
+- `scripts/world/world_layouts.gd`: leitura/conversão central dos dados e curvas suaves. Os mesmos limites são consultados pelos saves. `city_area.gd`: desenho geométrico, colisões e instanciamento de componentes existentes. As cenas de rua/percurso/campus escolhem a região; novas cenas de hall/sala fazem o mesmo. O antigo `travel_lab_area.gd` foi removido.
+- Bairro com circuito em volta da praça; campus com circuito de circulação. Dez ruas secundárias/alternativas somadas nas áreas externas, cada uma verificada fisicamente. Lotes reservados não ativam lojas/hobbies/futuras regiões.
+- Placas nos cruzamentos (duas por área externa, uma no hall), sem sequência repetida por distância. Sinalização e portas continuam componentes reutilizáveis. Edifícios de tamanhos variados, sombras simples, árvores geométricas, praças e formas de terreno são placeholders, sem novos assets externos.
+- `scripts/ui/scene_fade.gd`: fade-out, frame preto, troca de mapa, atualização da câmera e fade-in. `scripts/lab/scale_lab.gd`: valida destino antes do fade, bloqueia interações/movimento/ticks, preserva fração temporal e integra portas, carregamento e retorno do sono obrigatório. `change_area()` permanece operação imediata interna para inicialização/testes; interação de jogador usa o fluxo animado.
+- `data/dialogues/university_guide.tres` e `lesson_placeholder.tres`: guia técnico e acesso à sala de História por chaves. `interaction_point.gd`/`.tscn`: ponto de aula que abre diálogo placeholder. `dialogue_npc.gd` aceita uma chave de marker para identificar o guia, sem definir professor/elenco final. Hall/sala são interiores navegáveis com relógio natural congelado.
+- `scripts/core/save_manager.gd`: esquema 2 aceita novos interiores/limites. Migração valida o esquema 1 com limites antigos e reposiciona saves externos na entrada segura da mesma região; quarto conserva posição. Mantém nome, minutos/fração, origem da semana, alarme/contexto e tile. Não regrava o arquivo original durante carga. Novos JSONs usam precisão completa para frações.
+- `tests/city_university_test.gd`: runner urbano/interiores/fade/migração. `signposted_journey_test.gd` passa a alias de compatibilidade do mesmo runner (não contar como suíte independente). `travel_display_test.gd` adapta limites e espera o fade; caminhada completa fica no novo runner. Demais runners aguardam transições quando aplicável e usam diretórios isolados, inclusive os testes legados, para proteger slots da partida.
+- `localization/lab.csv` e tradução pt_BR, README/AGENTS e [city_layout.md](city_layout.md): instruções, hipóteses, referências e imagens. Sem mudanças no GDD histórico ou Drowned.
+
+### Uso e limites
+
+F5 na Godot 4.7. E sai do quarto; siga as ruas da praça até a saída ao sul/leste. Na via do rio, atravesse a ponte, siga a rampa ao norte e a rua sinuosa até o campus no nordeste. Pelo pátio/rampa chegue à fachada e use E para entrar no hall. Converse com o guia, siga o corredor à direita/acima e use E para entrar na História; o corredor central chega ao ponto de aula. E abre o diálogo provisório. Volte pelas mesmas passagens ou explore os circuitos/ramais.
+
+**[PROPOSTA]** Distribuição de lotes/ruas e suas dimensões, posição da escola/comércio/hobbies, ponte/patamares, árvores e decoração são layout de teste. As referências solicitadas foram interpretadas para Fliegen; não se copiou planta/asset de outro jogo. Detalhes e fontes em `city_layout.md`.
+
+Desnível é topografia 2D: terreno em patamares, taludes sólidos, passagens por rampa/escadaria. Não há eixo Z, pulo ou penalidade de velocidade/energia. Árvores são decoração sem colisão nesta fase. Terreno livre pode ser atravessado; somente edifícios, água/taludes e limites bloqueiam. As ruas secundárias terminam em reservas, sem novos mapas/sistemas completos. Grade/presença/notas não são implementadas; o ponto de aula indica conteúdo futuro. A referência das 09h continua diagnóstica, sem afirmar aula em fim de semana/férias.
+
+Save antigo externo muda de posição pela reforma de geometria e informa a migração; nenhum arquivo é sobrescrito só ao carregar. O esquema atual guarda posição exata dentro dos limites, sem reconstruir colisão de arquivos editados manualmente. Precisão limitada já gravada por JSONs antigos não pode ser recuperada; a migração verifica fração com tolerância de 1e-6, e os novos saves verificam round-trip exato de `0.1234567890123456`. Slot manual/auto e preferência continuam independentes.
+
+### Validações executadas
+
+Godot **4.7.2.stable.official.ed1daf0bf**, importação/editor headless final sem erros. Os oito runners padrão passaram:
+
+| Runner | Verificações | Resultado |
+|---|---:|---|
+| Cidade/universidade | 90 | zero falhas |
+| Laboratório/movimento | 60 | zero falhas |
+| Relógio | 41 | zero falhas |
+| Interiores | 42 | zero falhas |
+| Atividades | 34 | zero falhas |
+| Diálogo | 30 | zero falhas |
+| Sono/save | 51 | zero falhas |
+| Exibição/transições | 12 | zero falhas |
+
+**360 verificações padrão**, sem somar o alias. Novo runner percorre vias com física de colisão e E real; verifica ida/volta, barreiras de rio/talude fora das passagens, dez ramais/circuitos, fade por fase, clock/fração congelados durante fade, uma área ativa, guia, exploração e ponto de aula, save de interior, migração sem regravação, 04h na universidade/retorno às 12h e autosave desligado respeitado. A medição é feita antes dos fixtures de colisão/ramais; não há teletransporte no meio da ida/volta.
+
+Ensaio renderizado `-- --walk --capture`: **100 verificações, zero falhas**, dez PNGs da engine inspecionados. Primeira ida na proporção real: **106,445 segundos**, **+105 minutos**, chegada **07:45**, **75 minutos de margem até 09h**. Segundos incluem fades e breves operações de captura; o relógio pausa durante fade. Retorno/fixtures acelerados com `Engine.time_scale = 6`, restaurado ao encerrar; o ensaio padrão acelerado não fornece medição real 1:1. A variante renderizada inclui o conjunto base de 90 e não deve ser somada como suíte independente.
+
+As visões gerais usam câmera de inspeção apenas no teste. Gameplay conserva câmera zoom 1, corpo 40×56 e frame 128×128. Capturas mostram curvas, circuitos, ponte/rampa, interior/sala e frame completamente preto do fade. Regressão de exibição confere escala/HUD em 960×540, 1366×768 e 1920×1080. Não houve playtest humano nem simulação de corte de energia/falha física de disco. Logs `test-results/city-*.log` ignorados pelo Git; todas as suítes escrevem somente em `user://test_runs/`.
+
+![Bairro e circuito alternativo](screenshots/city_street_overview.png)
+
+![Via do rio e patamares](screenshots/city_route_overview.png)
+
+![Sala de História navegável](screenshots/city_classroom.png)
+
+Demais imagens e referências em [city_layout.md](city_layout.md).
+
+### Próxima tarefa
+
+**P2-03 — agenda acadêmica mínima manhã/tarde**, avanço temporal de aulas e registro de presença/falta. Horários de encerramento matutino/almoço/tarde continuam provisórios no GDD. Tile/arte/layout final, conteúdo acadêmico e NPCs definitivos, transporte, origem da semana e en/es permanecem pendentes. Não implementar outras fases só porque existem reservas no mapa.

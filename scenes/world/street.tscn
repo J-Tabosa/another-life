@@ -1,32 +1,6 @@
-[gd_scene load_steps=5 format=3]
-[ext_resource type="Script" path="res://scripts/world/lab_area.gd" id="1"]
-[ext_resource type="PackedScene" path="res://scenes/world/door.tscn" id="2"]
-[ext_resource type="PackedScene" path="res://scenes/world/dialogue_npc.tscn" id="3"]
-[ext_resource type="PackedScene" path="res://scenes/world/wayfinding_sign.tscn" id="4"]
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/world/city_area.gd" id="1"]
 
-[node name="Street" type="Node2D"]
+[node name="street" type="Node2D"]
 script = ExtResource("1")
-exterior = true
-
-[node name="Door" parent="." instance=ExtResource("2")]
-position = Vector2(480, 328)
-target_area = &"room"
-
-[node name="DialogueNPC" parent="." instance=ExtResource("3")]
-position = Vector2(350, 430)
-
-[node name="RouteDoor" parent="." instance=ExtResource("2")]
-position = Vector2(856, 432)
-target_area = &"route"
-hint_key = &"ROUTE_CAMPUS"
-label_key = &"ROUTE_CAMPUS"
-
-[node name="Directions" parent="." instance=ExtResource("4")]
-position = Vector2(680, 592)
-line_keys = Array[StringName]([&"WAYFIND_HORIZONTE", &"WAYFIND_HOME_UP"])
-
-[node name="Spawns" type="Node2D" parent="."]
-[node name="door" type="Marker2D" parent="Spawns"]
-position = Vector2(480, 402)
-[node name="route" type="Marker2D" parent="Spawns"]
-position = Vector2(776, 432)
+region_id = &"street"

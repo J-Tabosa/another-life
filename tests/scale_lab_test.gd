@@ -22,10 +22,15 @@ func settle() -> void:
 	for tick in range(4):
 		await physics_frame
 	await process_frame
+	for node in root.get_children():
+		if node.has_method("change_area"):
+			while node.transitioning:
+				await process_frame
 
 
 func run() -> void:
 	var lab: Node2D = load("res://scenes/lab/scale_lab.tscn").instantiate()
+	lab.test_storage_root = "user://test_runs/regression_" + str(Time.get_ticks_usec())
 	root.add_child(lab)
 	await settle()
 	var player: CharacterBody2D = lab.player

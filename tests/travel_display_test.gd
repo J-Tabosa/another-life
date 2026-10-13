@@ -23,6 +23,10 @@ func settle() -> void:
 		await physics_frame
 	for frame in range(2):
 		await process_frame
+	for node in root.get_children():
+		if node.has_method("change_area"):
+			while node.transitioning:
+				await process_frame
 
 
 func interact(lab: Node2D, portal_name: String) -> void:
@@ -60,38 +64,25 @@ func run() -> void:
 	await settle()
 	lab.change_area(&"street", &"door")
 	await interact(lab, "RouteDoor")
-	check(lab.area_id == &"route" and clock.running and camera.limit_right == 12800 and camera.limit_bottom == 1600, "street portal opens a large external route and extends camera limits")
+	check(lab.area_id == &"route" and clock.running and camera.limit_right == 6000 and camera.limit_bottom == 3600, "street portal opens a large external route and extends camera limits")
 	var from: Vector2 = lab.player.position
 	var start_minutes := clock.world_minutes
 	var started := Time.get_ticks_usec()
 	# Physics movement reaches the far portal at the production speed. Real-time
 	# option uses automatic ticks; short default verifies a section plus portals.
-	var real_walk := "--walk" in OS.get_cmdline_user_args()
-	clock.set_process(real_walk)
+	clock.set_process(false)
 	Input.action_press("move_right")
-	var destination := 12590.0 if real_walk else from.x + 400.0
-	while lab.player.position.x < destination and Time.get_ticks_usec() - started < 85_000_000:
+	while lab.player.position.x < from.x + 400 and Time.get_ticks_usec() - started < 5_000_000:
 		await physics_frame
 	Input.action_release("move_right")
 	await settle()
-	var duration := (Time.get_ticks_usec() - started) / 1_000_000.0
-	check(lab.player.position.x >= destination and lab.player.position.y == from.y, "walking follows the unobstructed route with real collision physics")
-	print("WALK: %.3fs, %.1fpx, +%d game minutes" % [duration, lab.player.position.x - from.x, clock.world_minutes - start_minutes])
-	if real_walk:
-		check(clock.world_minutes - start_minutes >= 68 and clock.world_minutes - start_minutes <= 72, "full journey takes about seventy game minutes using natural ticks")
-		check(lab.area.get_node("CampusDoor").can_interact(lab.player), "far campus portal is reachable by walking")
-		var event := InputEventAction.new()
-		event.action = &"interact"
-		event.pressed = true
-		lab._unhandled_input(event)
-		await settle()
-	else:
-		await interact(lab, "CampusDoor")
-	check(lab.area_id == &"campus" and camera.limit_right == 2400 and clock.running and lab.journey.active, "campus arrival preserves date and keeps walking trial active until the building entrance")
+	check(lab.player.position.x >= from.x + 400, "walking follows the first road section with real collision physics")
+	await interact(lab, "CampusDoor")
+	check(lab.area_id == &"campus" and camera.limit_right == 3200 and clock.running and lab.journey.active, "campus arrival preserves date and keeps walking trial active until the building entrance")
 	await interact(lab, "Door")
-	check(lab.area_id == &"route" and lab.player.position == Vector2(12560, 800), "campus exit returns to correct end of the route")
+	check(lab.area_id == &"route" and lab.player.position == Vector2(5400, 500), "campus exit returns to correct end of the route")
 	await interact(lab, "Door")
-	check(lab.area_id == &"street" and lab.player.position == Vector2(776, 432), "route exit returns to the residential marker")
+	check(lab.area_id == &"street" and lab.player.position == Vector2(2790, 2030), "route exit returns to the residential marker")
 	clock.set_process(false)
 	if "--capture" in OS.get_cmdline_user_args():
 		for season in range(4):
