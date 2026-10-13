@@ -6,9 +6,18 @@ extends Node2D
 var exterior: bool = true
 var tile_size: int = 32
 var collision_root: Node2D
+var sign_root: Node2D
 
 
 func _ready() -> void:
+	sign_root = Node2D.new()
+	sign_root.name = "RouteSigns"
+	add_child(sign_root)
+	if not campus:
+		for x in range(640, int(map_size.x - 160), 640):
+			var sign_node: Node2D = preload("res://scenes/world/wayfinding_sign.tscn").instantiate()
+			sign_node.position = Vector2(x, 980)
+			sign_root.add_child(sign_node)
 	rebuild()
 
 
@@ -38,9 +47,6 @@ func _draw() -> void:
 	for x in range(32, int(map_size.x), tile_size):
 		draw_line(Vector2(x, 32), Vector2(x, map_size.y - 32), Color(1, 1, 1, 0.05))
 	draw_rect(Rect2(32, 640, map_size.x - 64, 320), Color("6b777d"))
-	for x in range(640, int(map_size.x - 100), 1000):
-		draw_rect(Rect2(x, 600, 8, 40), Color("dfd5b5"))
-		draw_string(ThemeDB.fallback_font, Vector2(x, 580), tr("ROUTE_SIGN") % x, HORIZONTAL_ALIGNMENT_LEFT, -1, 18)
 	if campus:
 		draw_rect(Rect2(1088, 224, 960, 384), Color("344451"))
 		draw_string(ThemeDB.fallback_font, Vector2(1120, 280), tr("LAB_CAMPUS"), HORIZONTAL_ALIGNMENT_LEFT, -1, 24)

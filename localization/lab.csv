@@ -61,3 +61,14 @@ ROUTE_SIGN,Horizonte → · marco %d px (provisório)
 TRAVEL_PROGRESS, · %.1f mil px · %.1fs reais · +%d min
 TRAVEL_RESULT,Chegada: %.1fs reais · +%d minutos do jogo
 LAB_NPC_MARKER,NPC de teste
+WAYFIND_HORIZONTE,Horizonte →
+WAYFIND_HOME,← Bairro residencial
+WAYFIND_HOME_UP,Casa ↑ · retorno ao quarto
+WAYFIND_ENTRANCE_UP,Entrada da Horizonte ↑
+WAYFIND_ARRIVAL,Entrada · destino PLACEHOLDER
+JOURNEY_HOME,Casa → entrada
+JOURNEY_PARTIAL,Percurso parcial → entrada
+JOURNEY_PROGRESS,%s · %.1fs · +%d min · referência 09h
+JOURNEY_RESULT,%s · %02d:%02d · %.1fs / +%d min · %s
+JOURNEY_EARLY,%d min antes das 09h (teste)
+JOURNEY_LATE,%d min depois das 09h (teste)
