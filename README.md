@@ -2,7 +2,17 @@
 
 Protótipo em **Godot 4.7 / GDScript**, validado na **4.7.2 oficial**. Cânone e roadmap no [GDD](docs/ANOTHER_LIFE_GDD_DIA0.md), instruções em [AGENTS.md](AGENTS.md) e [migração da engine](docs/godot_4_7_migration.md).
 
-## Entrega atual — P2-06
+## Entrega atual — P2-07
+
+Pai e irmã placeholders agora têm **cumprimentos de manhã e eventos distintos de apresentação dos hobbies à noite**. No mesmo interior de teste da casa/quarto, converse com E: pai apresenta **skate**, irmã apresenta **fliperama e videogames**; o quadrado roxo do cantinho de música permite descobrir **música**. Concluir a última fala registra a descoberta. **Esc/Fechar cancela** sem registrar; repetir após concluir usa uma fala curta, sem duplicar eventos. Conversas não gastam minutos nem concedem presença acadêmica.
+
+**[HIPÓTESE TÉCNICA]** Presença doméstica de teste: pai/irmã das **06h às 08h** e das **17h às 23h**, todos os dias; cumprimentos na manhã e apresentações dos hobbies à noite. A rotina completa de trabalho/escola continua **[PENDENTE]**. Não há requisito de frequentar aula, cumprimentar primeiro ou seguir uma ordem entre os três hobbies. Perder o primeiro dia permite retomar em outra noite. Música fica disponível no quarto também antes das aulas; 04h continua reservada ao sono obrigatório.
+
+Abra **H / botão Interesses** para consultar somente hobbies já descobertos. Conhecimento é registrado apenas após interação concluída; mudanças de horário/localização não fabricam descobertas. Os três interesses persistem no bloco opcional `home_introductions` do esquema 3, com manual antes do sono e auto opcional separados. Saves anteriores sem o bloco continuam válidos e começam sem esses eventos conhecidos. Esta etapa apresenta os hobbies: minigames, prática musical com áudio/instrumento definitivo, níveis, recompensas e arcos familiares completos pertencem às etapas seguintes.
+
+[Pai e skate](docs/screenshots/home_father_skate.png) · [Irmã e jogos](docs/screenshots/home_sister_games.png) · [Música no quarto](docs/screenshots/home_music_discovery.png) · [Interesses descobertos](docs/screenshots/home_hobbies.png) · [Janela 960×540](docs/screenshots/home_hobbies_notebook.png)
+
+## Primeira pergunta — P2-06 preservada
 
 Banco em `data/questions/history.json` e **primeira pergunta na primeira aula da tarde frequentada**. Na sala, abra a agenda com E/J e escolha **Participar** entre 13h e 17h de um dia letivo. São quatro alternativas: clique ou use **1–4**, sem cronômetro. A pergunta inicial trata do ano do Grito do Ipiranga; conteúdo de teste com [fonte na Biblioteca Nacional](https://bndigital.bn.gov.br/dossies/gramaticas-e-dicionarios-do-portugues/linha-do-tempo/sobre-as-efemerides/1822-independencia-do-brasil/), sem definir a ementa final do curso.
 
@@ -48,6 +58,7 @@ Importe `project.godot` na Godot 4.7 e pressione **F5**. Use a janela separada d
 | E | Porta, local, NPC, colega, cama ou aula próximos |
 | M | Mapa de referência com sua posição em vermelho |
 | J | Consultar agenda; participar/esperar somente na sala |
+| H / botão Interesses | Consultar apenas os hobbies descobertos |
 | Esc | Fechar painel; sono obrigatório não pode ser cancelado |
 | E / Enter no diálogo | Avançar conversa |
 | 1–4 / mouse na pergunta | Escolher alternativa; Enter fecha a reação |
@@ -60,6 +71,8 @@ Importe `project.godot` na Godot 4.7 e pressione **F5**. Use a janela separada d
 **Caminho inicial:** saia de casa em Residential Block. Siga para oeste até a avenida vertical e suba até a rua ao sul da estação. E na passagem leva ao centro; siga para oeste, E para a região da Horizonte, atravesse a ponte e desça pelo campus até o prédio principal. E entra no hall. Siga à direita e depois acima para a sala; E no ponto de aula abre a agenda. Use **Esperar** para chegar às 09h, **Participar**, conclua a apresentação do professor para avançar às 12h e depois espere até 13h para o turno da tarde. Outras passagens permitem explorar o norte, o sul e o porto sem voltar à mesma interseção.
 
 **Colega e almoço:** na sala, aproxime-se do quadrado rosa ao lado direito das carteiras inferiores e converse com E. Depois da aula da manhã, saia para o hall e caminhe até a área central de convivência: a colega estará ali das 12h às 13h. Converse antes de esperar até a aula das 13h. Caso ainda não a conheça, a primeira interação apresenta a colega e a seguinte abre a conversa de almoço.
+
+**Família e hobbies:** antes de sair às 06h, pai fica à esquerda e irmã à direita no interior de teste; E perto de cada um abre seu cumprimento. Ao retornar após 17h, interaja novamente para os convites de skate e videogames. Para música, caminhe pelo centro do quarto até o quadrado roxo acima do ponto inicial, entre cama e mesa. Nenhuma descoberta é obrigatória para sair ou dormir. Para conferir rapidamente a noite, C permite avançar o calendário; isso registra as aulas não frequentadas como faltas.
 
 **Tempo e sono:** exterior: 1 segundo real = 1 minuto do jogo. Interiores, conversas, mapa, agenda e fades pausam o avanço natural. Atividades avançam minutos explicitamente. Às 04h há sono obrigatório; fora de casa retorna e acorda às 12h; em casa respeita o despertador. C mostra o calendário clicável, permite saltar apenas para o futuro e registra as aulas perdidas; não simula cada noite intermediária. Filtros: primavera rosa, verão azul, outono laranja e inverno branco.
 
@@ -74,6 +87,8 @@ Importe `project.godot` na Godot 4.7 e pressione **F5**. Use a janela separada d
 - `data/npcs/classmate.json` / `data/dialogues/classmate_*.tres`: horários, posições e diálogos da colega. `ClassmateEncounter` separa disponibilidade pelo relógio dos encontros efetivamente presenciados.
 - `data/questions/history.json` / `scripts/core/class_question_bank.gd`: questões com IDs estáveis, quatro opções, gabarito, reação, explicação e fonte. Não reutilize IDs para outra pergunta/alternativa; reinicie após editar o banco.
 - `scripts/ui/class_question_panel.gd`: escolhas/reação; `AcademicSchedule.question_answers` guarda o resultado, validado junto das presenças pelo save existente.
+- `data/events/home_introductions.json` / `data/dialogues/father_*.tres`, `sister_*.tres`, `music_*.tres`: atores, posições, janelas de teste, três hobbies e falas por chaves.
+- `scripts/core/home_introductions.gd`, `scripts/world/home_event_point.gd` e `scripts/ui/hobbies_panel.gd`: eventos concluídos/conhecimento, interação contextual e consulta dos interesses. O NPC genérico do quarto foi substituído pelo pai; o NPC de laboratório da rua permanece para os testes anteriores.
 
 | Área | Dimensões |
 |---|---|
@@ -99,6 +114,7 @@ godot --headless --path . --script res://tests/academic_schedule_test.gd
 godot --headless --path . --script res://tests/professor_intro_test.gd
 godot --headless --path . --script res://tests/classmate_encounter_test.gd
 godot --headless --path . --script res://tests/class_question_test.gd
+godot --headless --path . --script res://tests/home_introductions_test.gd
 godot --headless --path . --script res://tests/scale_lab_test.gd
 godot --headless --path . --script res://tests/time_manager_test.gd
 godot --headless --path . --script res://tests/interior_time_test.gd
@@ -112,10 +128,10 @@ Nesta máquina, substitua `godot` por `& '.\.tools\godot-4.7.2\Godot_v4.7.2-stab
 
 Runner urbano: física de caminhada real, consulta de colisões nas vias, conectividade dos 22 locais, passagens alternativas, interiores e fade. Aceleração 6× somente no teste. Acrescente `-- --walk` para medir a ida na velocidade real. Para seis capturas, execute sem `--headless` e acrescente `-- --walk --capture`. A visão geral usa câmera de inspeção apenas no runner. `signposted_journey_test.gd` é alias da suíte urbana. Agenda: botões reais de espera/participação, eventos por minuto, faltas, férias, sono, debug e saves/migrações. Variante sem `--headless`, com `-- --capture`, grava a agenda.
 
-Validação da P2-06 em **15/10/2026**: **786 verificações, zero falhas** — 104 da pergunta (inclui quatro capturas), 80 da colega, 47 do professor, 58 acadêmicas, 227 urbanas e 270 de regressão. Godot **4.7.2** oficial; importação/editor sem erros. A nova suíte testa quatro alternativas por teclado, escolha por mouse, reações, bloqueio de ações, cancelamento, aula tardia, saves/rollback, manual real ao dormir, compatibilidade e dados inválidos. Execute o runner de questões sem `--headless`, com `-- --capture`, para reproduzir as quatro capturas, incluindo 960×540. Resultados e limites no último registro de [decisions.md](docs/decisions.md). Sem playtest humano.
+Validação da P2-07 em **15/10/2026**: **896 verificações, zero falhas** — 114 domésticas (inclui cinco capturas), 100 da questão, 80 da colega, 47 do professor, 58 acadêmicas, 227 urbanas e 270 de regressão. Godot **4.7.2** oficial; importação/editor sem erros. A nova suíte verifica caminhada física até os três pontos em tiles 32/64, cumprimentos distintos dos hobbies, cancelamento/repetição, retomada posterior, relógio/fração, sono das 04h, manual real antes de dormir, auto separado, rollback, compatibilidade e dados inválidos. Execute o runner doméstico sem `--headless`, com `-- --capture`, para reproduzir as cinco capturas, incluindo 960×540. Resultados e limites no último registro de [decisions.md](docs/decisions.md). Sem playtest humano.
 
 A medição da cidade na P2-03 permanece referência histórica: ida em velocidade normal de 42,360 s, +39 minutos, chegada 06:39, margem 141 minutos até 09h. Na P2-04 a circulação foi repetida com aceleração apenas de teste; não houve nova medição de parede em velocidade normal.
 
 ## Próximo passo
 
-**P2-07 — eventos curtos de pai/irmã e música no quarto**, com descoberta dos hobbies previstos no GDD. Avaliações/seminários, notas finais e elenco completo continuam para etapas posteriores. **[PENDENTE]** Tile definitivo, arte final, nomes/layout finais e consequências acadêmicas do atraso. Referência histórica de calendário inicial: primavera 1, ano 1, segunda-feira, 06h; origem semanal configurável. Sem energia/crafting. Drowned preservado.
+**P2-08 — fluxo do fim do dia e teste completo**, percorrendo o Dia 1 do começo ao fim e verificando ausência de bloqueios. Minigames, avaliações/seminários, notas finais e elenco completo continuam para etapas posteriores. **[PENDENTE]** Tile definitivo, instrumento musical, arte final, nomes/layout finais e consequências acadêmicas do atraso. Referência histórica de calendário inicial: primavera 1, ano 1, segunda-feira, 06h; origem semanal configurável. Sem energia/crafting. Drowned preservado.

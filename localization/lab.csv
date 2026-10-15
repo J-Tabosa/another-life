@@ -1,4 +1,43 @@
 keys,pt_BR
+FATHER_SPEAKER,Pai
+SISTER_SPEAKER,Irmã
+MUSIC_SPEAKER,Cantinho de música
+FATHER_MARKER,Pai · PLACEHOLDER
+SISTER_MARKER,Irmã · PLACEHOLDER
+MUSIC_MARKER,Música · PLACEHOLDER
+FATHER_TALK,E — conversar com o pai
+SISTER_TALK,E — conversar com a irmã
+MUSIC_EXAMINE,E — conhecer o cantinho de música
+FATHER_GREETING_01,Bom dia! Como está se sentindo com a universidade? Estou torcendo por você.
+FATHER_GREETING_02,Mais tarde podemos conversar com calma. Também quero conhecer melhor esta cidade.
+FATHER_WAITING_01,Tenha um bom dia. A gente se encontra em casa mais tarde!
+FATHER_SKATE_01,Vi um pessoal andando de skate pela cidade. Fiquei com vontade de tentar também.
+FATHER_SKATE_02,Quando você quiser podemos separar um tempo para aprender juntos. Que tal?
+FATHER_SKATE_03,Sem pressa. Vai ser bom ter algo divertido para fazer além das obrigações.
+FATHER_REPEAT_01,Aquele convite para andar de skate continua de pé. Você escolhe quando quiser tentar.
+SISTER_GREETING_01,Bom dia! Hoje também tenho um monte de coisa nova para conhecer na escola.
+SISTER_GREETING_02,Depois quero saber como foi lá na Horizonte. Você me conta quando voltar?
+SISTER_WAITING_01,Até mais tarde! Depois a gente conversa sobre o nosso dia.
+SISTER_GAMES_01,Separei um videogame para a gente jogar junto. Quero te mostrar um jogo!
+SISTER_GAMES_02,Não precisa ser agora. Quando tiver um tempinho você pode me chamar.
+SISTER_GAMES_03,E se encontrar um fliperama pela cidade depois me conta como é!
+SISTER_REPEAT_01,Quando quiser jogar é só me chamar. Vou adorar ter sua companhia!
+MUSIC_DISCOVERY_01,Este cantinho do quarto pode ser um lugar para experimentar música.
+MUSIC_DISCOVERY_02,Posso começar aos poucos e descobrir o que gosto de tocar.
+MUSIC_DISCOVERY_03,É mais uma coisa para explorar no meu tempo.
+MUSIC_REPEAT_01,Meu cantinho de música está aqui para quando eu quiser voltar.
+HOBBIES_OPEN,H — interesses
+HOBBIES_TITLE,Seus interesses
+HOBBIES_CLOSE,Esc — fechar interesses
+HOBBIES_EMPTY,Você ainda não descobriu um hobby.
+HOBBIES_MORE,Ainda há interesses a descobrir nas suas conversas e explorações.
+HOBBY_SKATE,Skate
+HOBBY_VIDEOGAMES,Fliperama e videogames
+HOBBY_MUSIC,Música
+HOBBY_SKATE_DESCRIPTION,O convite do pai abriu uma possibilidade de aprender e se divertir juntos.
+HOBBY_VIDEOGAMES_DESCRIPTION,A conversa com sua irmã apresentou uma forma de passar tempo juntos.
+HOBBY_MUSIC_DESCRIPTION,Você encontrou um cantinho no quarto para explorar música.
+HOBBY_DISCOVERED,Novo interesse: %s · consulte com H
 QUESTION_IPIRANGA_PROMPT,"O episódio do Grito do Ipiranga, em 7 de setembro, ocorreu em que ano?"
 QUESTION_YEAR_1500,1500
 QUESTION_YEAR_1822,1822

@@ -37,6 +37,11 @@ var _classmate_minutes: int = -1
 var question_panel: ClassQuestionPanel
 var _question_minutes: int = -1
 var _question_intro_completed: bool = false
+var home_introductions: HomeIntroductions
+var hobbies_panel: HobbiesPanel
+var _home_pending: StringName = &""
+var _home_event: StringName = &""
+var _home_minutes: int = -1
 @onready var player: CharacterBody2D = $Player
 @onready var time_manager: TimeManager = $TimeManager
 @onready var dialogue_panel: DialoguePanel = $HUD/DialoguePanel
@@ -62,6 +67,14 @@ func _ready() -> void:
 	classmate.clock = time_manager
 	add_child(classmate)
 	classmate.changed.connect(_refresh_classmate)
+	home_introductions = HomeIntroductions.new()
+	home_introductions.clock = time_manager
+	add_child(home_introductions)
+	home_introductions.changed.connect(_refresh_home)
+	hobbies_panel = HobbiesPanel.new()
+	hobbies_panel.introductions = home_introductions
+	$HUD.add_child(hobbies_panel)
+	hobbies_panel.visibility_updated.connect(_sync_controls)
 	academic_panel = AcademicPanel.new()
 	academic_panel.schedule = academics
 	$HUD.add_child(academic_panel)
@@ -100,6 +113,8 @@ func _ready() -> void:
 	$HUD/DebugButton.pressed.connect(_open_debug)
 	$HUD/FullscreenButton.text = tr("FULLSCREEN_TOGGLE")
 	$HUD/FullscreenButton.pressed.connect(_toggle_fullscreen)
+	$HUD/HobbiesButton.text = tr("HOBBIES_OPEN")
+	$HUD/HobbiesButton.pressed.connect(_open_hobbies)
 	time_manager.enforce_sleep_limit = true
 	time_manager.minute_changed.connect(_on_minute_changed)
 	time_manager.clock_restored.connect(_update_clock)
@@ -110,6 +125,7 @@ func _ready() -> void:
 	dialogue_panel.closed.connect(_sync_controls)
 	dialogue_panel.finished.connect(_on_lesson_dialogue_finished)
 	dialogue_panel.finished.connect(_on_classmate_dialogue_finished)
+	dialogue_panel.finished.connect(_on_home_dialogue_finished)
 	get_viewport().size_changed.connect(_layout_hud)
 	_layout_hud()
 	change_area(&"room", &"start")
@@ -122,7 +138,7 @@ func _setup_inputs() -> void:
 		"interact": [KEY_E], "compare_scale": [KEY_T], "show_frame": [KEY_F],
 		"test_activity": [KEY_R],
 		"debug_calendar": [KEY_C], "toggle_fullscreen": [KEY_F11],
-		"academic_schedule": [KEY_J], "city_map": [KEY_M],
+		"academic_schedule": [KEY_J], "city_map": [KEY_M], "hobbies": [KEY_H],
 	}
 	for action: String in bindings:
 		if InputMap.has_action(action):
@@ -158,6 +174,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_open_debug()
 	elif event.is_action_pressed("academic_schedule") and not event.is_echo():
 		_open_academics()
+	elif event.is_action_pressed("hobbies") and not event.is_echo():
+		_open_hobbies()
 	elif event.is_action_pressed("city_map") and not event.is_echo():
 		city_map.region_id = area_id
 		city_map.player_position = player.position
@@ -219,6 +237,7 @@ func change_area(target: StringName, spawn: StringName) -> void:
 		return
 	first_lesson_pending = false
 	_classmate_pending = &""
+	_home_pending = &""
 	_clear_question()
 	dialogue_panel.close()
 	if is_instance_valid(area):
@@ -229,6 +248,7 @@ func change_area(target: StringName, spawn: StringName) -> void:
 	area.tile_size = tile_size
 	$World.add_child(area)
 	_refresh_classmate()
+	_refresh_home()
 	# Natural time is enabled only in the outdoor laboratory.
 	_sync_controls()
 	for target_node in get_tree().get_nodes_in_group("interactables"):
@@ -326,11 +346,74 @@ func _sync_controls() -> void:
 	time_manager.running = is_instance_valid(area) and area.exterior and not blocked
 	$HUD/ActivityButton.disabled = blocked
 	$HUD/DebugButton.disabled = blocked
+	$HUD/HobbiesButton.disabled = blocked
 	_update_clock()
 
 
 func _modal_open() -> bool:
-	return transitioning or first_lesson_pending or not _classmate_pending.is_empty() or dialogue_panel.active or sleep_manager.pending or (is_instance_valid(question_panel) and question_panel.visible) or (is_instance_valid(debug_panel) and debug_panel.visible) or (is_instance_valid(academic_panel) and academic_panel.visible) or (is_instance_valid(city_map) and city_map.visible)
+	return transitioning or first_lesson_pending or not _classmate_pending.is_empty() or not _home_pending.is_empty() or dialogue_panel.active or sleep_manager.pending or (is_instance_valid(hobbies_panel) and hobbies_panel.visible) or (is_instance_valid(question_panel) and question_panel.visible) or (is_instance_valid(debug_panel) and debug_panel.visible) or (is_instance_valid(academic_panel) and academic_panel.visible) or (is_instance_valid(city_map) and city_map.visible)
+
+
+func _open_hobbies() -> void:
+	if not _modal_open():
+		hobbies_panel.open()
+
+
+func _refresh_home() -> void:
+	if loading_slot or not is_instance_valid(area) or area_id != &"room":
+		return
+	for actor_id in HomeIntroductions.data().actors:
+		var profile: Dictionary = HomeIntroductions.data().actors[actor_id]
+		var actor := area.get_node_or_null(profile.node) as Area2D
+		if not HomeIntroductions.available(actor_id, time_manager.world_minutes):
+			if actor != null:
+				area.remove_child(actor)
+				actor.queue_free()
+			continue
+		if actor == null:
+			actor = preload("res://scenes/world/dialogue_npc.tscn").instantiate()
+			actor.set_script(preload("res://scripts/world/home_event_point.gd"))
+			actor.name = profile.node
+			actor.actor_id = StringName(actor_id)
+			actor.home_event_requested.connect(_open_home_dialogue)
+			area.add_child(actor)
+		actor.position = WorldLayouts.point(profile.at)
+		actor.marker_key = StringName(profile.marker)
+		actor.hint_key = StringName(profile.hint)
+		actor.marker_offset = WorldLayouts.point(profile.marker_offset)
+		actor.marker_color = Color(profile.color)
+		actor.dialogue = home_introductions.dialogue(StringName(actor_id))
+		actor.queue_redraw()
+
+
+func _open_home_dialogue(actor: Area2D) -> void:
+	if _modal_open() or area_id != &"room" or not is_instance_valid(actor) or not area.is_ancestor_of(actor) or not actor.has_signal("home_event_requested") or not actor.can_interact(player):
+		return
+	var profile: Dictionary = HomeIntroductions.data().actors.get(String(actor.actor_id), {})
+	if profile.is_empty() or actor != area.get_node_or_null(profile.node):
+		return
+	_home_pending = actor.actor_id
+	_home_event = home_introductions.conversation(_home_pending)
+	_home_minutes = time_manager.world_minutes
+	if not dialogue_panel.start(home_introductions.dialogue(_home_pending)):
+		_home_pending = &""
+		_sync_controls()
+
+
+func _on_home_dialogue_finished(was_completed: bool) -> void:
+	if _home_pending.is_empty():
+		return
+	var actor_id := _home_pending
+	var event_id := _home_event
+	_home_pending = &""
+	var valid := area_id == &"room" and not transitioning and not loading_slot and not sleep_manager.pending and time_manager.world_minutes == _home_minutes
+	_home_minutes = -1
+	_home_event = &""
+	if was_completed and valid and home_introductions.remember(actor_id, event_id):
+		if event_id == &"intro":
+			var hobby: String = HomeIntroductions.data().actors[String(actor_id)].hobby
+			$HUD/ActivityResult.text = tr("HOBBY_DISCOVERED") % tr(HomeIntroductions.data().hobbies[hobby].label)
+		_autosave()
 
 
 func _open_academics() -> void:
@@ -340,7 +423,7 @@ func _open_academics() -> void:
 
 
 func _academic_action_allowed() -> bool:
-	return area_id == &"classroom" and academic_panel.visible and not transitioning and not sleep_manager.pending and not dialogue_panel.active and not question_panel.visible and not debug_panel.visible and not city_map.visible
+	return area_id == &"classroom" and academic_panel.visible and not transitioning and not sleep_manager.pending and not dialogue_panel.active and not question_panel.visible and not hobbies_panel.visible and not debug_panel.visible and not city_map.visible
 
 
 func _attend_class() -> void:
@@ -431,7 +514,7 @@ func _open_debug() -> void:
 
 
 func debug_jump(minutes: int) -> bool:
-	if first_lesson_pending or question_panel.visible or not _classmate_pending.is_empty() or sleep_manager.pending or minutes < time_manager.world_minutes:
+	if first_lesson_pending or question_panel.visible or hobbies_panel.visible or not _home_pending.is_empty() or not _classmate_pending.is_empty() or sleep_manager.pending or minutes < time_manager.world_minutes:
 		return false
 	debug_panel.close()
 	journey.reset()
@@ -447,11 +530,13 @@ func debug_jump(minutes: int) -> bool:
 func _on_sleep_limit() -> void:
 	first_lesson_pending = false
 	_classmate_pending = &""
+	_home_pending = &""
 	_clear_question()
 	dialogue_panel.close()
 	debug_panel.close()
 	academic_panel.close()
 	city_map.close()
+	hobbies_panel.close()
 	sleep_manager.request(true, area_id != &"room")
 
 
@@ -484,7 +569,7 @@ func _on_woke(duration_minutes: int) -> void:
 
 
 func snapshot() -> Dictionary:
-	return {"schema_version": SaveManager.SCHEMA_VERSION, "world": time_manager.get_clock_state(), "player": {"name": protagonist_name, "area": String(area_id), "x": player.position.x, "y": player.position.y}, "sleep": sleep_manager.get_state(), "lab": {"tile_size": tile_size}, "academics": academics.get_state(), "classmate": classmate.get_state()}
+	return {"schema_version": SaveManager.SCHEMA_VERSION, "world": time_manager.get_clock_state(), "player": {"name": protagonist_name, "area": String(area_id), "x": player.position.x, "y": player.position.y}, "sleep": sleep_manager.get_state(), "lab": {"tile_size": tile_size}, "academics": academics.get_state(), "classmate": classmate.get_state(), "home_introductions": home_introductions.get_state()}
 
 
 func load_slot(kind: String) -> bool:
@@ -507,20 +592,25 @@ func _restore_state(state: Dictionary) -> void:
 	loading_slot = true
 	first_lesson_pending = false
 	_classmate_pending = &""
+	_home_pending = &""
 	_clear_question()
 	dialogue_panel.close()
 	debug_panel.close()
 	academic_panel.close()
 	city_map.close()
+	hobbies_panel.close()
 	tile_size = int(state.lab.tile_size)
 	protagonist_name = state.player.name
 	academics.suspended = true
 	classmate.suspended = true
+	home_introductions.suspended = true
 	time_manager.restore_clock(int(state.world.minutes), float(state.world.fraction), int(state.world.weekday_offset))
 	academics.restore(state.academics)
 	classmate.restore(state.get("classmate", {}))
+	home_introductions.restore(state.get("home_introductions", {}))
 	academics.suspended = false
 	classmate.suspended = false
+	home_introductions.suspended = false
 	sleep_manager.alarm_minutes = int(state.sleep.alarm_minutes)
 	sleep_manager.pending = state.sleep.pending
 	sleep_manager.forced = state.sleep.forced
@@ -531,6 +621,7 @@ func _restore_state(state: Dictionary) -> void:
 	journey.reset()
 	loading_slot = false
 	_refresh_classmate()
+	_refresh_home()
 	if sleep_manager.pending:
 		sleep_panel.open()
 	_sync_controls()
@@ -566,6 +657,7 @@ func _layout_hud() -> void:
 	$HUD/ActivityResult.size.x = size.x - 380
 	$HUD/DebugButton.position = Vector2(size.x - 350, 108)
 	$HUD/FullscreenButton.position = Vector2(size.x - 170, 108)
+	$HUD/HobbiesButton.position = Vector2(20, 108)
 
 
 func _interaction_target() -> Area2D:

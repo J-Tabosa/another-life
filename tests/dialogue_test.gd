@@ -48,7 +48,7 @@ func press_key(code: Key, echo: bool = false) -> void:
 
 
 func approach_npc(lab: Node2D) -> void:
-	lab.player.position = lab.area.get_node("DialogueNPC").position + Vector2(40, 0)
+	lab.player.position = lab.area.get_node("Father" if lab.area_id == &"room" else "DialogueNPC").position + Vector2(40, 0)
 	await settle()
 
 
@@ -106,10 +106,10 @@ func run() -> void:
 	await press_key(KEY_E)
 	check(not panel.active and lab.area_id == &"room", "E at a distance does not open dialogue or use a door")
 	await approach_npc(lab)
-	check(lab._interaction_target() == lab.area.get_node("DialogueNPC") and "conversar" in lab.get_node("HUD/Info").text, "nearby NPC shares interaction targeting and translated hint")
+	check(lab._interaction_target() == lab.area.get_node("Father") and "conversar" in lab.get_node("HUD/Info").text, "nearby father shares interaction targeting and translated hint")
 	await press_key(KEY_E)
-	check(panel.active and panel.visible and panel.get_node("Panel/Line").text == tr("LAB_DIALOGUE_01"), "E opens first line without immediately advancing it")
-	check(panel.get_node("Panel/Speaker").text == "NPC provisório", "speaker uses a translated placeholder key")
+	check(panel.active and panel.visible and panel.get_node("Panel/Line").text == tr("FATHER_GREETING_01"), "E opens first line without immediately advancing it")
+	check(panel.get_node("Panel/Speaker").text == tr("FATHER_SPEAKER"), "speaker uses a translated father key")
 	check(not panel.start(CONVERSATION) and lifecycle == ["opened"], "active conversation cannot be replaced or opened twice")
 	var start_position: Vector2 = lab.player.position
 	Input.action_press("move_right")
@@ -128,11 +128,11 @@ func run() -> void:
 	check(clock.world_minutes == 360 and lab.tile_size == 32 and lab.player.show_frame == previous_frame and lab.area_id == &"room", "dialogue blocks activities, scale controls and door transition requests")
 	check(lab.get_node("HUD/ActivityButton").disabled, "underlying activity button is disabled during dialogue")
 	await press_key(KEY_E, true)
-	check(panel.get_node("Panel/Line").text == tr("LAB_DIALOGUE_01"), "held interaction key does not skip lines")
+	check(panel.get_node("Panel/Line").text == tr("FATHER_GREETING_01"), "held interaction key does not skip lines")
 	if "--capture" in OS.get_cmdline_user_args():
 		await capture("dialogue_room.png")
 	await press_key(KEY_ENTER)
-	check(panel.active and panel.get_node("Panel/Line").text == tr("LAB_DIALOGUE_02"), "Enter advances to the second line")
+	check(panel.active and panel.get_node("Panel/Line").text == tr("FATHER_GREETING_02"), "Enter advances to the second line")
 	await press_key(KEY_E)
 	check(not panel.active and lifecycle == ["opened", "closed"], "final E closes once without reopening the nearby NPC")
 	check(lab.player.controls_enabled and not clock.running and not lab.get_node("HUD/ActivityButton").disabled, "closing indoors restores controls while natural time remains frozen")

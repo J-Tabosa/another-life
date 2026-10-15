@@ -1,0 +1,24 @@
+{
+  "actors": {
+    "father": {
+      "node": "Father", "at": [350,430], "marker": "FATHER_MARKER", "hint": "FATHER_TALK", "marker_offset": [-40,-76], "color": "cfa06c",
+      "home_windows": [[360,480],[1020,1380]], "hobby": "skate",
+      "dialogues": {"greeting": "father_greeting", "waiting": "father_waiting", "intro": "father_skate", "repeat": "father_repeat"}
+    },
+    "sister": {
+      "node": "Sister", "at": [790,430], "marker": "SISTER_MARKER", "hint": "SISTER_TALK", "marker_offset": [-46,-76], "color": "9acb91",
+      "home_windows": [[360,480],[1020,1380]], "hobby": "videogames",
+      "dialogues": {"greeting": "sister_greeting", "waiting": "sister_waiting", "intro": "sister_videogames", "repeat": "sister_repeat"}
+    },
+    "music": {
+      "node": "MusicCorner", "at": [520,220], "marker": "MUSIC_MARKER", "hint": "MUSIC_EXAMINE", "marker_offset": [-84,-62], "color": "c1a4d9",
+      "home_windows": [[0,1440]], "hobby": "music",
+      "dialogues": {"intro": "music_discovery", "repeat": "music_repeat"}
+    }
+  },
+  "hobbies": {
+    "skate": {"label": "HOBBY_SKATE", "description": "HOBBY_SKATE_DESCRIPTION", "actor": "father"},
+    "videogames": {"label": "HOBBY_VIDEOGAMES", "description": "HOBBY_VIDEOGAMES_DESCRIPTION", "actor": "sister"},
+    "music": {"label": "HOBBY_MUSIC", "description": "HOBBY_MUSIC_DESCRIPTION", "actor": "music"}
+  }
+}

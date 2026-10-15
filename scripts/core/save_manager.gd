@@ -99,6 +99,10 @@ static func validate_state(state: Dictionary, legacy: bool = false) -> bool:
 	if not legacy and state.has("classmate"):
 		if not state.classmate is Dictionary or not ClassmateEncounter.valid_state(state.classmate, int(world.minutes), int(world.weekday_offset)):
 			return false
+	# Optional in schema 3: earlier saves have no home/hobby discoveries.
+	if not legacy and state.has("home_introductions"):
+		if not state.home_introductions is Dictionary or not HomeIntroductions.valid_state(state.home_introductions, int(world.minutes)):
+			return false
 	return true
 
 
