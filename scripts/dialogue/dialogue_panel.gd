@@ -3,6 +3,7 @@ extends Control
 
 signal opened
 signal closed
+signal finished(was_completed: bool)
 
 var active: bool = false
 var _line_keys: PackedStringArray
@@ -51,12 +52,16 @@ func advance() -> void:
 		return
 	_line_index += 1
 	if _line_index == _line_keys.size():
-		close()
+		_finish(true)
 	else:
 		_show_line()
 
 
 func close() -> void:
+	_finish(false)
+
+
+func _finish(was_completed: bool) -> void:
 	if not active:
 		return
 	active = false
@@ -64,6 +69,7 @@ func close() -> void:
 	_line_keys.clear()
 	$Panel/Speaker.text = ""
 	$Panel/Line.text = ""
+	finished.emit(was_completed)
 	closed.emit()
 
 
