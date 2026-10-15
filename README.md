@@ -2,7 +2,17 @@
 
 Protótipo em **Godot 4.7 / GDScript**, validado na **4.7.2 oficial**. Cânone e roadmap no [GDD](docs/ANOTHER_LIFE_GDD_DIA0.md), instruções em [AGENTS.md](AGENTS.md) e [migração da engine](docs/godot_4_7_migration.md).
 
-## Entrega atual — P2-04
+## Entrega atual — P2-05
+
+Primeira colega de História placeholder com **duas conversas distintas**: primeiro contato e conversa do almoço. E perto do quadrado rosa inicia o diálogo. **Concluir** registra o encontro; **Esc/Fechar** cancela e permite tentar novamente. Conversas pausam movimento/relógio e não dão presença acadêmica. Nome, aparência, biografia e falas finais continuam **[PENDENTE]**.
+
+Rotina mínima de teste em dias letivos fora das férias: **06h–12h na sala, 12h–13h no hall, 13h–17h na sala**. A posição depende do horário, não de já conhecer o jogador. As duas conversas cabem no mesmo dia: conheça a colega antes da aula e encontre-a no hall ao meio-dia. Se o primeiro contato ocorrer no almoço, conclua a apresentação e interaja novamente para a conversa do intervalo. Se perder o horário, ela continua disponível em outro dia letivo. Não há encontro obrigatório ou conversa automática após a aula.
+
+Datas de conclusão persistem no bloco opcional `classmate` do **esquema 3**. Saves anteriores sem o bloco iniciam os encontros como desconhecidos e mantêm horário/posição/frequência. Auto opcional grava após cada conversa nova concluída; cancelar ou repetir não grava nem duplica registros. Manual e auto continuam independentes. Nenhuma conversa é registrada apenas porque a colega mudou de sala fora de cena. Não há amizade numérica, romance ou diário novo nesta etapa.
+
+[Primeiro contato](docs/screenshots/classmate_introduction.png) · [Conversa no almoço](docs/screenshots/classmate_lunch.png)
+
+## Professor e primeira aula — P2-04 preservada
 
 Professor de História placeholder na sala, com conversa de orientação e apresentação em quatro falas na primeira aula frequentada. Nome, aparência e biografia continuam **[PENDENTE]**. E perto dele abre a conversa; E no ponto de aula ou J abre a agenda. Escolha **Participar** durante um turno: a apresentação congela o relógio e, ao concluir a última fala com E/Enter/Continuar, avança até o fim do turno e registra presença. **Esc/Fechar cancela** e volta à agenda sem tempo gasto nem presença; pode tentar novamente.
 
@@ -25,7 +35,7 @@ Importe `project.godot` na Godot 4.7 e pressione **F5**. Use a janela separada d
 | Controle | Ação |
 |---|---|
 | WASD / setas | Caminhar em oito direções |
-| E | Porta, local, NPC, cama ou aula próximos |
+| E | Porta, local, NPC, colega, cama ou aula próximos |
 | M | Mapa de referência com sua posição em vermelho |
 | J | Consultar agenda; participar/esperar somente na sala |
 | Esc | Fechar painel; sono obrigatório não pode ser cancelado |
@@ -38,6 +48,8 @@ Importe `project.godot` na Godot 4.7 e pressione **F5**. Use a janela separada d
 
 **Caminho inicial:** saia de casa em Residential Block. Siga para oeste até a avenida vertical e suba até a rua ao sul da estação. E na passagem leva ao centro; siga para oeste, E para a região da Horizonte, atravesse a ponte e desça pelo campus até o prédio principal. E entra no hall. Siga à direita e depois acima para a sala; E no ponto de aula abre a agenda. Use **Esperar** para chegar às 09h, **Participar**, conclua a apresentação do professor para avançar às 12h e depois espere até 13h para o turno da tarde. Outras passagens permitem explorar o norte, o sul e o porto sem voltar à mesma interseção.
 
+**Colega e almoço:** na sala, aproxime-se do quadrado rosa ao lado direito das carteiras inferiores e converse com E. Depois da aula da manhã, saia para o hall e caminhe até a área central de convivência: a colega estará ali das 12h às 13h. Converse antes de esperar até a aula das 13h. Caso ainda não a conheça, a primeira interação apresenta a colega e a seguinte abre a conversa de almoço.
+
 **Tempo e sono:** exterior: 1 segundo real = 1 minuto do jogo. Interiores, conversas, mapa, agenda e fades pausam o avanço natural. Atividades avançam minutos explicitamente. Às 04h há sono obrigatório; fora de casa retorna e acorda às 12h; em casa respeita o despertador. C mostra o calendário clicável, permite saltar apenas para o futuro e registra as aulas perdidas; não simula cada noite intermediária. Filtros: primavera rosa, verão azul, outono laranja e inverno branco.
 
 ## Dados e saves
@@ -48,6 +60,7 @@ Importe `project.godot` na Godot 4.7 e pressione **F5**. Use a janela separada d
 - `scripts/world/reference_city.gd` / `reference_renderer.gd`: geometria, colisões e desenho dos exteriores; `city_area.gd` mantém o instanciamento compartilhado.
 - `scripts/core/academic_schedule.gd` / `scripts/ui/academic_panel.gd`: agenda, eventos, frequência e flag de apresentação.
 - `data/dialogues/professor_*.tres`: falas por chaves; `DialoguePanel.finished` distingue conclusão de cancelamento, integrado pelo controlador do laboratório.
+- `data/npcs/classmate.json` / `data/dialogues/classmate_*.tres`: horários, posições e diálogos da colega. `ClassmateEncounter` separa disponibilidade pelo relógio dos encontros efetivamente presenciados.
 
 | Área | Dimensões |
 |---|---|
@@ -71,6 +84,7 @@ godot --headless --path . --editor --import --quit
 godot --headless --path . --script res://tests/city_university_test.gd
 godot --headless --path . --script res://tests/academic_schedule_test.gd
 godot --headless --path . --script res://tests/professor_intro_test.gd
+godot --headless --path . --script res://tests/classmate_encounter_test.gd
 godot --headless --path . --script res://tests/scale_lab_test.gd
 godot --headless --path . --script res://tests/time_manager_test.gd
 godot --headless --path . --script res://tests/interior_time_test.gd
@@ -84,10 +98,10 @@ Nesta máquina, substitua `godot` por `& '.\.tools\godot-4.7.2\Godot_v4.7.2-stab
 
 Runner urbano: física de caminhada real, consulta de colisões nas vias, conectividade dos 22 locais, passagens alternativas, interiores e fade. Aceleração 6× somente no teste. Acrescente `-- --walk` para medir a ida na velocidade real. Para seis capturas, execute sem `--headless` e acrescente `-- --walk --capture`. A visão geral usa câmera de inspeção apenas no runner. `signposted_journey_test.gd` é alias da suíte urbana. Agenda: botões reais de espera/participação, eventos por minuto, faltas, férias, sono, debug e saves/migrações. Variante sem `--headless`, com `-- --capture`, grava a agenda.
 
-Validação da P2-04 em **15/10/2026**: **601 verificações, zero falhas** — 47 do professor (inclui duas capturas), 57 acadêmicas, 227 urbanas e 270 de regressão. Godot **4.7.2** oficial; importação/editor sem erros. Runner do professor cobre teclado/mouse, cancelamento, conclusão, faltas, compatibilidade e persistência. Execute sem `--headless`, com `-- --capture`, para reproduzir as duas capturas. Resultados e limites no último registro de [decisions.md](docs/decisions.md). Sem playtest humano.
+Validação da P2-05 em **15/10/2026**: **681 verificações, zero falhas** — 82 da colega (inclui duas capturas), 45 do professor, 57 acadêmicas, 227 urbanas e 270 de regressão. Godot **4.7.2** oficial; importação/editor sem erros. O runner da colega percorre sala → aula → hall com movimento/física e interação reais, além de testar cancelamento, datas, load, limites do almoço, dias sem aula e reencontro posterior. Execute sem `--headless`, com `-- --capture`, para reproduzir as duas capturas. Resultados e limites no último registro de [decisions.md](docs/decisions.md). Sem playtest humano.
 
 A medição da cidade na P2-03 permanece referência histórica: ida em velocidade normal de 42,360 s, +39 minutos, chegada 06:39, margem 141 minutos até 09h. Na P2-04 a circulação foi repetida com aceleração apenas de teste; não houve nova medição de parede em velocidade normal.
 
 ## Próximo passo
 
-**P2-05 — primeira colega/amiga e almoço**, com duas oportunidades de conversa no mesmo dia. Não há avaliação, quiz, notas ou elenco completo nesta entrega. **[PENDENTE]** Tile definitivo, arte final, nomes/layout finais e consequências acadêmicas do atraso. Referência histórica de calendário inicial: primavera 1, ano 1, segunda-feira, 06h; origem semanal configurável. Sem energia/crafting. Drowned preservado.
+**P2-06 — banco de questões e primeira pergunta**, com quatro alternativas, reação e registro da resposta. Não há avaliação, quiz, notas ou elenco completo nesta entrega. **[PENDENTE]** Tile definitivo, arte final, nomes/layout finais e consequências acadêmicas do atraso. Referência histórica de calendário inicial: primavera 1, ano 1, segunda-feira, 06h; origem semanal configurável. Sem energia/crafting. Drowned preservado.

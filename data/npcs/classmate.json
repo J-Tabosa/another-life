@@ -1,0 +1,16 @@
+{
+  "marker": "CLASSMATE_MARKER",
+  "hint": "CLASSMATE_TALK",
+  "marker_offset": [-90,-62],
+  "locations": [
+    {"from":360,"until":720,"area":"classroom","at":[1040,720]},
+    {"from":720,"until":780,"area":"university","at":[800,620]},
+    {"from":780,"until":1020,"area":"classroom","at":[1040,720]}
+  ],
+  "dialogues": {
+    "intro":"res://data/dialogues/classmate_intro.tres",
+    "lunch":"res://data/dialogues/classmate_lunch.tres",
+    "waiting":"res://data/dialogues/classmate_waiting.tres",
+    "repeat":"res://data/dialogues/classmate_repeat.tres"
+  }
+}

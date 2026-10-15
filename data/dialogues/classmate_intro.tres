@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="DialogueData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/dialogue/dialogue_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+speaker_key = &"CLASSMATE_SPEAKER"
+line_keys = PackedStringArray("CLASSMATE_INTRO_01", "CLASSMATE_INTRO_02", "CLASSMATE_INTRO_03")
