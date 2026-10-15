@@ -375,3 +375,57 @@ Demais imagens e referências em [city_layout.md](city_layout.md).
 ### Próxima tarefa
 
 **P2-03 — agenda acadêmica mínima manhã/tarde**, avanço temporal de aulas e registro de presença/falta. Horários de encerramento matutino/almoço/tarde continuam provisórios no GDD. Tile/arte/layout final, conteúdo acadêmico e NPCs definitivos, transporte, origem da semana e en/es permanecem pendentes. Não implementar outras fases só porque existem reservas no mapa.
+
+
+---
+
+## P2-03 — cidade da imagem, agenda e frequência — 15/10/2026
+
+### Escopo e decisões do criador
+
+Solicitação explícita: remover o esqueleto urbano anterior, reconstruir o mapa da imagem com todos os pontos de interesse/estradas e executar P2-03, testar e publicar no GitHub. Esclarecimentos respondidos pelo criador: **reconstruir ampliado preservando proporções e escala do personagem**; **usar 09h–12h e 13h–17h nesta etapa**. O GDD histórico permanece intacto. Professor, avaliação, quiz e novos sistemas de lojas/hobbies não entram nesta entrega.
+
+### Arquivos e comportamento
+
+- `data/world/reference_city.json`: 22 pontos nomeados, 33 traçados de vias/caminhos/pontes e ferrovia, costa/rio e 50 pegadas de prédios (41 fachadas adicionais e nove edifícios de pontos de interesse). Coordenadas anotadas manualmente na imagem. Fator 6 uniforme, planta 9720×5826. `regions.json` substitui somente exteriores, conserva hall/sala, define três recortes sobrepostos e 14 ligações reversíveis. Quarto permanece igual.
+- `ReferenceCity` centraliza conversões, água, corredores de travessia e colisões. `ReferenceRenderer` desenha curvas, casas/comércio, fontes, campos, parque, camping, farol, costa e porto como placeholders geométricos. A imagem original do criador foi copiada sem edição para `assets/world/fliegen_reference.png` e aparece **somente no painel M** com posição vermelha. A planta jogável não é a imagem ampliada como piso. Trees/props são decorativos; não há arte final/tilemap novo.
+- `place_marker.gd` dá identificação externa aos 22 locais por chaves traduzíveis, sem ativar seus interiores/sistemas. Universidade mantém o hall/sala; ao disputar com o marcador informativo, a porta tem prioridade. Passagens alternativas têm círculos discretos e dica no HUD; preservam o fade e não repetem placas de texto pela cidade.
+- `academic_schedule.gd` e `data/schedules/academic.json`: turnos aprovados, segunda a sexta fora das férias canônicas, espera explícita na sala e participação até o fim do turno com todos os eventos de minuto. Participação registra presença; turno encerrado sem participação registra falta. Permanecer no campus/sala não conta como participar.
+- **[HIPÓTESE TÉCNICA]** Atrasado pode participar antes do fim; grava o instante de entrada. Penalidade, presença parcial, notas e conteúdo da aula são **[PENDENTE]**. Espera não pula aula em andamento, nem atravessa noites/04h. Férias são apenas o filtro necessário da agenda, sem antecipar o restante da P3.
+- `academic_panel.gd`: J consulta hoje e últimos sete dias em qualquer área; esperar/participar é habilitado e revalidado somente na sala. E no ponto de aula abre o mesmo painel. Movimento/relógio natural ficam congelados em painéis. `city_map_panel.gd` / `city_map_view.gd` dão referência de posição sem teleporte.
+- Save esquema **3**: intervalo acompanhado e presenças explícitas. Faltas são determinadas pelos turnos letivos encerrados sem presença dentro do intervalo persistido. Debug reconciliado sem iterar dia a dia, inclusive ano 9999. Relógio e intervalo restauram juntos no load. Auto opcional também grava após espera/participação. Manual/auto/preferências separados e oferta manual na cama preservados.
+- Migração de **1/2** valida coordenadas com limites históricos antes de recolocar exteriores na entrada segura. Interiores inalterados preservam coordenadas. Registro começa na hora do save migrado, sem inventar faltas anteriores. Arquivo original não é alterado ao ler. Fração temporal, nome, origem semanal, tile e alarme continuam preservados.
+- README/AGENTS atualizados; `docs/reference_city.md` documenta planta, todos os locais, coordenadas, controles e limites. `docs/city_layout.md` marcado como histórico da P2-02. Novos textos em pt_BR com chaves para tradução futura.
+
+### Execução e validação
+
+Godot **4.7.2.stable.official.ed1daf0bf**. Importação/editor headless final sem erros de script/recurso. Todas as partidas de teste usam `user://test_runs/` isolados; nenhum slot real foi modificado.
+
+| Runner | Verificações finais | Resultado |
+|---|---:|---|
+| `city_university_test.gd` renderizado | 233 (inclui seis capturas) | zero falhas |
+| `academic_schedule_test.gd` renderizado | 56 (inclui uma captura) | zero falhas |
+| `scale_lab_test.gd` | 60 | zero falhas |
+| `time_manager_test.gd` | 41 | zero falhas |
+| `interior_time_test.gd` | 42 | zero falhas |
+| `timed_action_test.gd` | 34 | zero falhas |
+| `dialogue_test.gd` | 30 | zero falhas |
+| `sleep_save_test.gd` | 51 | zero falhas |
+| `travel_display_test.gd` | 12 | zero falhas |
+| **Total, sem somar variantes repetidas** | **559** | **zero falhas** |
+
+Urbano: conectividade dos 22 acessos com grade sobre os obstáculos, overlap/interação reais, consultas de forma física ao longo de todas as vias caminháveis (ferrovia decorativa), spawns livres, passagens principais e alternativas nas duas direções com posição correta, relógio/fração preservados, física de caminhada na ida principal, entrada/guia/sala/agenda, retorno e cobertura do fade. Consultas amostram o eixo das vias; não equivalem a varrer cada pixel da largura das ruas. Fixtures das alternativas posicionam o personagem junto às passagens; a medição principal usa movimento real entre os pontos de rua.
+
+Durante a verificação apareceram fachadas sobre trechos anotados das vias; foram corrigidos trajetos/pegadas mantendo a organização da referência. O teste de aproximação de waypoint em velocidade normal foi ajustado para usar pressão de direção inteira, evitando que magnitudes de teste caíssem na zona morta do input antes de alcançar o alvo. Nenhuma velocidade/input de produção foi alterado.
+
+Agenda: cliques reais nos botões, espera 06h→09h e 12h→13h, aula 09h→12h e chegada 13h20→17h, ordem dos minutos, evento de encerramento, não duplicação, ações remotas recusadas, aula em andamento não pulável por espera, faltas após debug/sono até meio-dia, fins de semana/férias, load manual/auto com rollback conjunto, arquivos independentes, validação de presença/futuro, migração 1/2 incluindo coordenadas da antiga rota longa, interiores preservados, originais intactos e salto para ano 9999 sem histórico expandido.
+
+Ensaio renderizado **sem aceleração na ida**: **42,359796 s**, avanço de **39 minutos**, chegada **06h39**, **141 minutos antes das 09h**. Segundos incluem pausas de transição; o relógio fica congelado durante fade/carregamento. Logs: `test-results/reference-render.log` (medição normal), `reference-render-final.log` (capturas após refinamentos de rótulos/mapa), `academic-render.log`, `p203-*.log`. Logs ignorados pelo Git. O runner padrão usa aceleração 6× e sua duração de parede não descreve produção. Variantes compartilham verificações; não somar novamente seus totais.
+
+Sete capturas finais renderizadas e inspecionadas: `reference_geometry_overview`, `reference_street`, `reference_route`, `reference_campus`, `reference_university`, `reference_overview`, `academic_agenda`. A visão geral usa zoom de inspeção somente no runner; jogo em zoom 1. Corrigida sobreposição de nome na entrada da universidade e ajustada altura da imagem no painel para deixar o botão de fechar visível. Sem playtest humano.
+
+### Limites e próximo passo
+
+Mapa mantém proporções/posições gerais da referência com anotações e formas aproximadas; não é reprodução pixel a pixel de fachadas/árvores. Colisões de água são uma malha aproximada com margem de travessia; árvores não colidem. Não há sistema de altura/Z, transporte, todos os interiores dos novos locais ou arte final. A distribuição nominal dos locais vem da imagem e não resolve o cânone definitivo. Sem energia/crafting. Drowned não foi modificado.
+
+Próxima tarefa: **P2-04 — professor e primeira aula**, diálogo introdutório usando esta agenda, sem antecipar banco de questões ou avaliação.

@@ -1,6 +1,7 @@
 extends Area2D
 
 signal dialogue_requested(data: DialogueData)
+signal lesson_requested
 @export var dialogue: DialogueData
 var hint_key: StringName = &"CITY_ACCESS_LESSON"
 
@@ -11,7 +12,7 @@ func can_interact(player: CharacterBody2D) -> bool:
 
 func interact(player: CharacterBody2D) -> void:
 	if can_interact(player):
-		dialogue_requested.emit(dialogue)
+		lesson_requested.emit()
 
 
 func _draw() -> void:
