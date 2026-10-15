@@ -606,3 +606,76 @@ Logs locais em `test-results/p206-*.log`, ignorados pelo Git. A circulação da 
 Banco contém uma questão de teste. Mais questões, ementa, nomes/arte finais do professor, pesos/notas e recompensas numéricas continuam **[PENDENTE]**. Escala, mapa, fade, colega/almoço, sono, calendário e saves anteriores preservados; Drowned não foi acessado/modificado.
 
 Próxima tarefa: **P2-07 — eventos curtos de pai/irmã e música no quarto**, com descoberta dos hobbies previstos no GDD.
+
+## 2026-10-15 — P2-07: família e descoberta dos hobbies
+
+### Escopo e conteúdo
+
+Somente P2-07. A rota prevista no GDD tem cumprimentos familiares antes da universidade e introduções dos hobbies no retorno. Pai e irmã recebem duas cenas cada: cumprimento matinal e convite noturno, com falas breves de repetição. Pai apresenta skate; irmã apresenta fliperama/videogames. O cantinho de música no quarto tem descoberta e repetição próprias. São exatamente os três hobbies canônicos. A mãe não virou NPC de rotina; não há revelação de segredos, arcos de trabalho/bullying/romance ou tarefas familiares condicionando dinheiro/afeto.
+
+Falas são placeholders por chaves em `localization/lab.csv`. O pai demonstra curiosidade por skate e convida a aprender junto; a irmã apresenta um jogo e convida sem obrigar; o protagonista identifica um canto para explorar música. O instrumento definitivo permanece **[PENDENTE]**, portanto o ponto é um quadrado roxo identificado como música, sem escolher um instrumento pelo criador. Não há minigames, prática musical com áudio, XP/níveis, recompensa monetária ou progresso de habilidade nesta entrega. As atividades funcionais ficam para a fase 3.
+
+**[HIPÓTESE TÉCNICA]** Pai/irmã aparecem no interior de teste da casa entre **06h–08h** e **17h–23h**, diariamente, inclusive fins de semana/férias. A manhã permite os cumprimentos; à noite, os convites dos hobbies. É uma disponibilidade mínima para testar a introdução, sem afirmar horários canônicos de emprego/escola, deslocamentos ou rotinas completas. Música está disponível a qualquer horário em casa fora das 04h, preservando o sono obrigatório. O mesmo quarto do laboratório representa provisoriamente o interior doméstico; não foram criados cômodos/casa completa nem alterado o mapa urbano.
+
+O NPC genérico do quarto foi substituído pelo pai; irmã e cantinho de música usam o mesmo ator/área de proximidade com um sinal contextual. Personagens/pontos são montados de `data/events/home_introductions.json`, com posições, cores, marcadores e recursos de diálogo. O NPC genérico da rua permanece para regressão do diálogo anterior. Escala do protagonista, zoom, mobília e colisões de tiles 32/64 continuam iguais.
+
+### Eventos e conhecimento
+
+E próximo abre o diálogo existente; Enter/E/Continuar avança, Esc/Fechar cancela. Só concluir a última fala lembra o evento. Cancelar no último texto continua sendo cancelamento, sem descoberta/autosave. Conversar pausa movimento/tempo, bloqueia atividades, portas, mapa, agenda/interesses e salto debug. Não consome minutos, não concede frequência nem escolhe atividade obrigatória. Depois de concluir uma introdução, repetir usa uma fala curta sem regravar o evento ou autosave.
+
+Não há requisito de cumprimento prévio, aula frequentada ou ordem entre pai/irmã/música. Música pode ser descoberta de manhã, antes de ir à universidade. Perder a noite ou o primeiro dia permite retomar em outro dia; a oportunidade não depende do dia inicial nem do calendário acadêmico. Sair de casa e dormir são permitidos com descobertas pendentes.
+
+`HomeIntroductions` guarda apenas conhecimento confirmado: `greetings` por ator e `discovered` por hobby, com minutos absolutos de conclusão. A presença dos atores é calculada a partir do relógio e não concede conhecimento fora de cena. Eventos de conclusão emitem sinais reutilizáveis; nenhuma relação interna é revelada ou fabricada.
+
+H / botão **Interesses** abre uma lista simples dos hobbies já descobertos e uma indicação genérica de que ainda há coisas a descobrir. Nomes de hobbies não descobertos não aparecem nesse painel; não é um diário social completo. O aviso após cada nova descoberta aponta para H. O painel pausa o relógio exterior sem consumir a fração do minuto e respeita os bloqueios modais existentes. Fundo opaco mantém o texto legível em 960×540.
+
+### Arquivos e save
+
+- `data/events/home_introductions.json` e dez recursos `data/dialogues/father_*.tres`, `sister_*.tres`, `music_*.tres`: disponibilidade, posições, três hobbies e falas reutilizáveis.
+- `scripts/core/home_introductions.gd`: disponibilidade/conversa, memórias, descobertas e validação de timestamps.
+- `scripts/world/home_event_point.gd`, `scripts/lab/scale_lab.gd`, `scenes/world/room.tscn`: interação de proximidade, continuação segura e atores placeholders.
+- `scripts/ui/hobbies_panel.gd`, `scenes/lab/scale_lab.tscn`, `localization/lab.csv` e tradução gerada: consulta por H/botão e textos.
+- `scripts/core/save_manager.gd`: validação do bloco novo; `tests/home_introductions_test.gd` novo e runner de diálogo adaptado ao pai no quarto. README, AGENTS e referência da cidade atualizados.
+
+O esquema permanece **3**. `home_introductions` é opcional para arquivos anteriores; sem ele, cumprimentos/descobertas iniciam vazios, sem alterar posição, relógio/fração, frequência, respostas ou colega. Campos novos têm apenas IDs conhecidos e minutos inteiros não negativos, não futuros, compatíveis com a janela da conversa. Hobby familiar antes das 17h, cumprimento à noite, hobby desconhecido, descoberta às 04h e valores inválidos são recusados. JSON restaura números como floats: o módulo normaliza os minutos validados para inteiros ao restaurar. Isso foi corrigido durante o teste de rollback, que inicialmente detectou diferença entre o dicionário em memória e o carregado.
+
+Manual antes do sono e auto opcional permanecem em arquivos separados. Auto grava somente após novo cumprimento ou descoberta concluída; repetição/cancelamento não grava. Load durante diálogo limpa a continuação pendente antes de restaurar conhecimento/localização; rollback devolve as oportunidades daquele save. Uma troca interna de área também cancela a continuação sem conceder evento. Arquivo inválido é rejeitado antes de alterar a partida. Saves antigos carregam sem regravar o original. Migrações 1/2 permanecem preservadas.
+
+### Validação executada
+
+Godot **4.7.2.stable.official.ed1daf0bf**. Importação/editor headless final sem erros. Runners usam `user://test_runs/`, isolando saves/settings reais. Cinco capturas renderizadas e inspecionadas em 1280×720 e 960×540. Sem playtest humano.
+
+| Runner | Verificações finais | Resultado |
+|---|---:|---|
+| Família/hobbies renderizado | 114 (inclui cinco capturas) | zero falhas |
+| Questão | 100 | zero falhas |
+| Professor | 47 | zero falhas |
+| Agenda acadêmica | 58 | zero falhas |
+| Colega | 80 | zero falhas |
+| Cidade/universidade | 227 | zero falhas |
+| Escala/movimento | 60 | zero falhas |
+| Relógio | 41 | zero falhas |
+| Tempo em interiores | 42 | zero falhas |
+| Ações temporizadas | 34 | zero falhas |
+| Diálogo anterior | 30 | zero falhas |
+| Sono/save/calendário | 51 | zero falhas |
+| Resolução/percurso | 12 | zero falhas |
+| **Total sem somar variantes repetidas** | **896** | **zero falhas** |
+
+Família/hobbies: recursos/chaves das dez conversas; exatamente três hobbies; consulta sem nomes desconhecidos; ator remoto/inexistente/incorreto; caminhada física desde o ponto inicial até pai/irmã/música, inclusive contornando mesa, em tiles 32/64; input real de teclado/mouse; cumprimento sem descoberta antecipada; eventos distintos à noite; cancelamento na última fala, eco, repetição sem autosave; bloqueios de tempo/atividades/portas/mapas; nenhuma presença acadêmica; retorno para casa com fade e atores corretos; nenhum conhecimento por salto de calendário; manual/auto separados; load durante conversa, rollback e retomada; manual real antes do sono/restauração da escolha pendente; schema 3 sem o bloco, bytes originais intactos; dados inválidos e load corrompido preservando estado atual; cancelamento por troca de área ou relógio alterado; limites exatos 05h59/06h/07h59/08h/16h59/17h/22h59/23h/meia-noite/dia seguinte; retomada no fim de semana em ordem inversa sem cumprimentos; música 03h59, sono obrigatório 04h e alarme 06h; textos/controles em notebook; consulta exterior preserva fração 0,75 e retoma exatamente o próximo minuto.
+
+Runner novo: `godot --headless --path . --script res://tests/home_introductions_test.gd`. Para cinco capturas, retirar `--headless` e acrescentar `-- --capture`. Variante headless tem 109 verificações, incluídas nas 114 renderizadas; não somar novamente. Aceleração de movimento 3× somente no runner doméstico, sem mudar a velocidade de produção. O runner urbano foi repetido com aceleração 6×, sem nova medição de percurso em velocidade normal. Logs em `test-results/p207-*.log`, ignorados pelo Git.
+
+![Pai apresenta skate](screenshots/home_father_skate.png)
+
+![Irmã apresenta videogames](screenshots/home_sister_games.png)
+
+![Descoberta da música](screenshots/home_music_discovery.png)
+
+![Interesses em notebook](screenshots/home_hobbies_notebook.png)
+
+### Limites e próxima tarefa
+
+Nomes, arte, falas finais, instrumento e rotinas familiares completas continuam **[PENDENTE]**. Esta entrega cobre introdução/descoberta; nenhum hobby já possui minigame/prática funcional. Mapa, escala, aulas/questão, colega/almoço, sono, calendário e saves anteriores preservados. Drowned não foi acessado/modificado.
+
+Próxima tarefa: **P2-08 — fluxo do fim do dia e teste completo do Dia 1**, percorrendo todas as apresentações e o sono/salvamento em uma partida contínua, incluindo desvios sem bloqueios.

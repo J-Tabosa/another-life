@@ -85,3 +85,8 @@ focus_mode = 0
 offset_right = 150.0
 offset_bottom = 34.0
 focus_mode = 0
+
+[node name="HobbiesButton" type="Button" parent="HUD"]
+offset_right = 180.0
+offset_bottom = 34.0
+focus_mode = 0
