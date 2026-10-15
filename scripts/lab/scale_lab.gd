@@ -11,6 +11,7 @@ const AREAS := {
 const SEASON_KEYS := ["SEASON_SPRING", "SEASON_SUMMER", "SEASON_AUTUMN", "SEASON_WINTER"]
 const WEEKDAY_KEYS := ["WEEKDAY_MON", "WEEKDAY_TUE", "WEEKDAY_WED", "WEEKDAY_THU", "WEEKDAY_FRI", "WEEKDAY_SAT", "WEEKDAY_SUN"]
 const TEST_ACTIVITY: TimedAction = preload("res://data/activities/lab_activity.tres")
+const PROFESSOR_INTRO: DialogueData = preload("res://data/dialogues/professor_introduction.tres")
 const SEASON_FILTERS := [Color(1.0, 0.55, 0.72, 0.09), Color(0.3, 0.65, 1.0, 0.09), Color(1.0, 0.55, 0.2, 0.12), Color(1.0, 1.0, 1.0, 0.12)]
 @export var test_storage_root: String = ""
 var area: Node2D
@@ -28,6 +29,8 @@ var fade: SceneFade
 var academics: AcademicSchedule
 var academic_panel: AcademicPanel
 var city_map: CityMapPanel
+var first_lesson_pending: bool = false
+var _first_lesson_minutes: int = -1
 @onready var player: CharacterBody2D = $Player
 @onready var time_manager: TimeManager = $TimeManager
 @onready var dialogue_panel: DialoguePanel = $HUD/DialoguePanel
@@ -90,6 +93,7 @@ func _ready() -> void:
 	$HUD/ActivityButton.pressed.connect(_run_test_activity)
 	dialogue_panel.opened.connect(_sync_controls)
 	dialogue_panel.closed.connect(_sync_controls)
+	dialogue_panel.finished.connect(_on_lesson_dialogue_finished)
 	get_viewport().size_changed.connect(_layout_hud)
 	_layout_hud()
 	change_area(&"room", &"start")
@@ -197,6 +201,7 @@ func change_area(target: StringName, spawn: StringName) -> void:
 		next_area.free()
 		transitioning = false
 		return
+	first_lesson_pending = false
 	dialogue_panel.close()
 	if is_instance_valid(area):
 		$World.remove_child(area)
@@ -258,7 +263,7 @@ func _sync_controls() -> void:
 
 
 func _modal_open() -> bool:
-	return transitioning or dialogue_panel.active or sleep_manager.pending or (is_instance_valid(debug_panel) and debug_panel.visible) or (is_instance_valid(academic_panel) and academic_panel.visible) or (is_instance_valid(city_map) and city_map.visible)
+	return transitioning or first_lesson_pending or dialogue_panel.active or sleep_manager.pending or (is_instance_valid(debug_panel) and debug_panel.visible) or (is_instance_valid(academic_panel) and academic_panel.visible) or (is_instance_valid(city_map) and city_map.visible)
 
 
 func _open_academics() -> void:
@@ -272,9 +277,37 @@ func _academic_action_allowed() -> bool:
 
 
 func _attend_class() -> void:
-	if _academic_action_allowed() and academics.attend():
+	if not _academic_action_allowed() or first_lesson_pending:
+		return
+	var session := academics.current_session()
+	if session.is_empty() or academics.status(time_manager.world_minutes / 1440, session) == "present":
+		return
+	if not academics.professor_intro_seen:
+		first_lesson_pending = true
+		_first_lesson_minutes = time_manager.world_minutes
+		academic_panel.close()
+		if not dialogue_panel.start(PROFESSOR_INTRO):
+			first_lesson_pending = false
+			_open_academics()
+		return
+	if academics.attend():
 		academic_panel.refresh()
 		_autosave()
+
+
+func _on_lesson_dialogue_finished(was_completed: bool) -> void:
+	if not first_lesson_pending:
+		return
+	first_lesson_pending = false
+	var can_finish := area_id == &"classroom" and not transitioning and not loading_slot and not sleep_manager.pending and time_manager.world_minutes == _first_lesson_minutes
+	_first_lesson_minutes = -1
+	if was_completed and can_finish and academics.attend():
+		academics.professor_intro_seen = true
+		_autosave()
+	if can_finish:
+		_open_academics()
+	else:
+		_sync_controls()
 
 
 func _wait_for_class() -> void:
@@ -290,7 +323,7 @@ func _open_debug() -> void:
 
 
 func debug_jump(minutes: int) -> bool:
-	if sleep_manager.pending or minutes < time_manager.world_minutes:
+	if first_lesson_pending or sleep_manager.pending or minutes < time_manager.world_minutes:
 		return false
 	debug_panel.close()
 	journey.reset()
@@ -304,6 +337,7 @@ func debug_jump(minutes: int) -> bool:
 
 
 func _on_sleep_limit() -> void:
+	first_lesson_pending = false
 	dialogue_panel.close()
 	debug_panel.close()
 	academic_panel.close()
@@ -361,6 +395,7 @@ func load_slot(kind: String) -> bool:
 
 func _restore_state(state: Dictionary) -> void:
 	loading_slot = true
+	first_lesson_pending = false
 	dialogue_panel.close()
 	debug_panel.close()
 	academic_panel.close()

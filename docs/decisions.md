@@ -429,3 +429,58 @@ Sete capturas finais renderizadas e inspecionadas: `reference_geometry_overview`
 Mapa mantém proporções/posições gerais da referência com anotações e formas aproximadas; não é reprodução pixel a pixel de fachadas/árvores. Colisões de água são uma malha aproximada com margem de travessia; árvores não colidem. Não há sistema de altura/Z, transporte, todos os interiores dos novos locais ou arte final. A distribuição nominal dos locais vem da imagem e não resolve o cânone definitivo. Sem energia/crafting. Drowned não foi modificado.
 
 Próxima tarefa: **P2-04 — professor e primeira aula**, diálogo introdutório usando esta agenda, sem antecipar banco de questões ou avaliação.
+
+
+---
+
+## P2-04 — professor e apresentação da primeira aula — 15/10/2026
+
+**Escopo autorizado:** professor placeholder e diálogo introdutório da primeira aula, usando a agenda já implementada; testes e publicação no GitHub. O GDD mantém nomes, aparências e biografias dos NPCs **[PENDENTE]**. As falas desta etapa são texto provisório de acolhida ao curso de História da Horizonte, sem definir identidade pessoal, disciplina específica ou avaliação.
+
+### Arquivos e fluxo
+
+- `data/dialogues/professor_greeting.tres` e `professor_introduction.tres`: recursos `DialogueData` por chaves traduzíveis. Conversa curta orienta o uso da agenda; apresentação tem quatro falas sobre acolhida, fontes, argumentos e o início do curso. `localization/lab.csv` e recurso pt_BR importado contêm os textos.
+- `data/world/regions.json`: professor ao lado do ponto de aula, sem bloquear o corredor. `city_area.gd` lê chave de rótulo/dica e deslocamento opcional; `dialogue_npc.gd` reutiliza o quadrado genérico. Posição do rótulo ajustada após inspeção para não disputar com os botões do HUD. Dados do guia e dos NPCs anteriores preservados.
+- `DialoguePanel.finished(was_completed)` diferencia avançar além da última fala de fechar/cancelar. `opened`/`closed` e os controles existentes continuam compatíveis; um diálogo inativo não emite outro encerramento. O sinal é genérico, sem conhecimento sobre professor ou agenda.
+- `scale_lab.gd`: Participar na primeira aula elegível esconde a agenda e abre a apresentação. Tempo natural e movimento ficam bloqueados. Concluir a última fala usa a atividade acadêmica existente, avança minuto a minuto ao fim do turno, registra presença e a flag de conclusão, depois volta à agenda. Esc/Fechar volta à agenda sem presença, flag ou avanço temporal, inclusive se cancelar na última fala. Pode tentar novamente.
+- Conversar informalmente com o professor não completa a apresentação nem registra frequência. Iniciar repetidamente, segurar E ou avançar depois de terminar não duplica a aula. Mudança interna de área/carregamento cancela a continuação pendente; transições/interações e debug são bloqueados enquanto o diálogo está ativo. Retorno de sono também limpa a continuação antes de fechar o painel.
+- `academic_schedule.gd`: `professor_intro_seen` no estado acadêmico. Esquema **3** preservado, campo opcional validado como booleano e ausência interpretada como `false`. Saves anteriores da P2-03 mantêm posição e frequência, sem migração de coordenadas. Migrações 1/2 continuam iniciando estado acadêmico compatível. Auto opcional, após concluir a aula, contém frequência e conclusão juntos; manual anterior restaura a apresentação pendente. Não há save silencioso ao abrir/cancelar.
+- `tests/professor_intro_test.gd`: fluxo específico com movimento/física, teclado, mouse, cancelamento, conclusão, persistência e compatibilidade. `tests/academic_schedule_test.gd` incorpora a apresentação na primeira participação; demais expectativas de horários/presença/falta preservadas. README, AGENTS e nota da planta atualizados.
+
+**[HIPÓTESE TÉCNICA]** A apresentação aparece na primeira aula frequentada, em vez de exigir uma data fixa. Na rota esperada, é a manhã do primeiro dia; se o jogador faltar, pode conhecê-la à tarde ou em outro dia letivo. Atrasos seguem a regra provisória existente: pode participar até antes do encerramento; faltas anteriores não são apagadas. Professor fica estático na sala nesta etapa; sua rotina completa e as falas/identidade finais permanecem **[PENDENTE]**.
+
+### Como experimentar
+
+Godot 4.7, F5. Vá à sala de História. E perto do professor abre a conversa breve. E no ponto de aula ou J abre a agenda; espere até 09h e clique Participar. E/Enter/Continuar percorrem as quatro falas; concluir avança até 12h. Esc/Fechar cancela e permite tentar de novo. Depois de concluída, as próximas aulas usam o avanço normal sem repetir a apresentação. Para confirmar load, habilite auto no calendário ou salve manualmente na cama e retome a partida.
+
+### Validação executada
+
+Godot **4.7.2.stable.official.ed1daf0bf**. Importação/editor headless final sem erros. Todos os runners usam diretórios isolados `user://test_runs/`, sem tocar nos saves reais. Capturas renderizadas e inspecionadas em 1280×720; sem playtest humano.
+
+| Runner | Verificações | Resultado |
+|---|---:|---|
+| Professor renderizado | 47 (inclui duas capturas) | zero falhas |
+| Agenda acadêmica | 57 | zero falhas |
+| Cidade/universidade | 227 | zero falhas |
+| Escala/movimento | 60 | zero falhas |
+| Relógio | 41 | zero falhas |
+| Tempo em interiores | 42 | zero falhas |
+| Ações temporizadas | 34 | zero falhas |
+| Diálogo anterior | 30 | zero falhas |
+| Sono/save/calendário | 51 | zero falhas |
+| Resolução/percurso | 12 | zero falhas |
+| **Total sem somar variantes repetidas** | **601** | **zero falhas** |
+
+Professor: acesso físico ao NPC; saudação traduzida sem frequência; conclusão/cancelamento diferenciados; aula não avança antes de concluir; relógio/fração e controles; bloqueio de R/T/M/transição/debug; input repetido; Esc e mouse Fechar na última fala; load durante apresentação; cancelamento por troca interna de mapa; minutos 09h→12h em ordem; presença e flag no mesmo auto; auto separado do manual; segunda aula sem repetição; rollback manual; schema 3 sem flag; validação de flag inválida; primeira participação à tarde ou dia posterior preservando faltas; fim de semana/férias sem apresentação. Não somar novamente as 45 verificações da variante headless, contidas nas 47 renderizadas.
+
+Comandos novos: `godot --headless --path . --script res://tests/professor_intro_test.gd`; para as capturas, retirar `--headless` e acrescentar `-- --capture`. Regressões conforme README. Logs locais em `test-results/p204-*.log`, ignorados pelo Git. A circulação urbana foi reexecutada com aceleração somente de teste; não foi repetida medição em velocidade normal, pois a planta/velocidade não mudaram.
+
+![Apresentação do professor](screenshots/professor_introduction.png)
+
+![Primeira aula concluída com presença](screenshots/professor_first_lesson_done.png)
+
+### Limites e próxima tarefa
+
+Professor sem nome/visual/biografia definitivos, sem agenda de NPC ou conteúdo completo de disciplina. Sem notas, perguntas ou avaliações nesta P2-04; o banco de questões é P2-06. Mapa, escala, relógio, sono, calendário, filtros e slots separados mantidos. Drowned não foi acessado/modificado.
+
+Próxima tarefa: **P2-05 — primeira colega/amiga e almoço**, com duas oportunidades de conversa no mesmo dia.

@@ -52,6 +52,10 @@ func prepare() -> void:
 		npc.dialogue = load("res://data/dialogues/" + layout.npc.dialogue + ".tres")
 		if region_id == &"university":
 			npc.marker_key = &"CITY_GUIDE"
+		npc.marker_key = StringName(layout.npc.get("marker", npc.marker_key))
+		npc.hint_key = StringName(layout.npc.get("hint", npc.hint_key))
+		if layout.npc.has("marker_offset"):
+			npc.marker_offset = WorldLayouts.point(layout.npc.marker_offset)
 		add_child(npc)
 	if layout.has("arrival"):
 		var destination := preload("res://scenes/world/journey_destination.tscn").instantiate()

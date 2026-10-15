@@ -82,6 +82,10 @@ func run() -> void:
 	check(not schedule.wait_for_class() and clock.world_minutes == 540, "schedule also rejects waiting past an ongoing class")
 	events.clear()
 	await click(panel.attend_button)
+	check(lab.first_lesson_pending and clock.world_minutes == 540, "first attendance opens professor introduction before advancing")
+	for _line in range(lab.PROFESSOR_INTRO.line_keys.size()):
+		lab.dialogue_panel.advance()
+	check(schedule.professor_intro_seen, "completed professor introduction is recorded")
 	check(clock.world_minutes == 720 and events.size() == 180, "real GUI attendance advances to noon with intermediate minutes")
 	check(schedule.status(0, morning) == "present" and finished == ["morning:present"], "morning present event emitted once at end")
 	check(SaveManager.validate_state(lab.snapshot()), "academic state accepted by save validator")

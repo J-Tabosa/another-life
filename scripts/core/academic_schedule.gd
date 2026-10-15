@@ -10,6 +10,7 @@ var sessions: Array = []
 var started_at: int
 var evaluated_until: int
 var present: Dictionary = {}
+var professor_intro_seen: bool = false
 var suspended: bool = false
 var _acting: bool = false
 
@@ -80,7 +81,7 @@ func attend() -> bool:
 		return false
 	_acting = true
 	# Reserve presence before minute events reach the end of this class.
-	# Arrival after the start is recorded; grading/penalties belong to P2-04+.
+	# Arrival after the start is recorded; grading and penalties remain undecided.
 	present[id] = now
 	var completed := clock.advance_minutes(duration)
 	if not completed:
@@ -110,17 +111,21 @@ func reconcile() -> void:
 
 
 func get_state() -> Dictionary:
-	return {"started_at": started_at, "evaluated_until": evaluated_until, "present": present.duplicate()}
+	return {"started_at": started_at, "evaluated_until": evaluated_until, "present": present.duplicate(), "professor_intro_seen": professor_intro_seen}
 
 
 func restore(state: Dictionary) -> void:
 	started_at = int(state.started_at)
 	evaluated_until = int(state.evaluated_until)
 	present = state.present.duplicate()
+	professor_intro_seen = state.get("professor_intro_seen", false)
 	changed.emit()
 
 
 static func valid_state(state: Dictionary, minutes: int, offset: int) -> bool:
+	# Optional in schema 3: saves from P2-03 predate this introduction.
+	if not state.get("professor_intro_seen", false) is bool:
+		return false
 	if not SaveManager._whole(state.get("started_at"), 0, minutes) or not SaveManager._whole(state.get("evaluated_until"), int(state.started_at), minutes) or not state.get("present") is Dictionary:
 		return false
 	for id in state.present:

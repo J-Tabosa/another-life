@@ -99,6 +99,7 @@
     "signs": [],
     "doors": [{"name":"Door","at":[700,920],"target":"university","spawn":"classroom","hint":"CITY_EXIT_CLASSROOM"}],
     "spawns": {"door":[700,820]},
-    "lesson": [700,240]
+    "lesson": [700,240],
+    "npc": {"at":[900,240],"dialogue":"professor_greeting","marker":"PROFESSOR_MARKER","hint":"PROFESSOR_TALK","marker_offset":[-90,-62]}
   }
 }
