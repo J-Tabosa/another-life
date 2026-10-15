@@ -484,3 +484,60 @@ Comandos novos: `godot --headless --path . --script res://tests/professor_intro_
 Professor sem nome/visual/biografia definitivos, sem agenda de NPC ou conteúdo completo de disciplina. Sem notas, perguntas ou avaliações nesta P2-04; o banco de questões é P2-06. Mapa, escala, relógio, sono, calendário, filtros e slots separados mantidos. Drowned não foi acessado/modificado.
 
 Próxima tarefa: **P2-05 — primeira colega/amiga e almoço**, com duas oportunidades de conversa no mesmo dia.
+
+
+---
+
+## P2-05 — primeira colega e conversa no almoço — 15/10/2026
+
+**Escopo autorizado:** primeira colega/amiga de História, primeiro contato e conversa distinta no almoço, com testes e publicação no GitHub. Nome, aparência e biografia continuam **[PENDENTE]**, conforme GDD; textos e posições são provisórios. Não implementar relações numéricas, romance, diário completo, quiz ou novas regiões.
+
+### Arquivos e comportamento
+
+- `data/npcs/classmate.json`: horários/locais, posições e recursos de diálogo. `data/dialogues/classmate_intro.tres`, `classmate_lunch.tres`, `classmate_waiting.tres`, `classmate_repeat.tres`: primeiro contato, almoço e falas curtas entre/depois dos encontros; todos os textos por chaves em `localization/lab.csv` e recurso pt_BR importado.
+- `scripts/core/classmate_encounter.gd`: separa disponibilidade pelo relógio de conversas efetivamente presenciadas. Localização consulta o calendário mínimo já existente e os intervalos dos dados; sinais `changed`/`remembered` e datas de conclusão não dependem de texto de diálogo nem de árvore de cena. Não cria gerenciador geral de elenco.
+- **[HIPÓTESE TÉCNICA]** Em dias letivos fora das férias, 06h–12h na sala de História, 12h–13h no hall e 13h–17h na sala. Antes/depois desses horários, fins de semana e férias, não há ator nesta etapa. O começo às 06h e os pontos de espera são convenções do laboratório, sem definir a rotina final da NPC. O almoço usa a janela 12h–13h já autorizada na agenda desta etapa. Troca de posição é direta ao atualizar o relógio, sem animação de caminhada de NPC.
+- `classmate_npc.gd` reutiliza o NPC de diálogo, emitindo pedido de encontro com o ator. `dialogue_npc.gd` passa a aceitar cor de placeholder, com valor anterior preservado para os demais NPCs. A colega é um quadrado rosa rotulado PLACEHOLDER, sem visual-base definitivo.
+- `scale_lab.gd`: instancia no mapa correspondente, atualiza a presença ao avançar/restaurar o relógio e valida proximidade antes da conversa. Primeiro contato só marca `met_at` após concluir todas as falas. Conhecida a colega, falar com ela no hall entre 12h e 13h abre o almoço; concluir marca `lunch_at`. Esc/Fechar cancela sem registrar nada, mesmo na última fala. Repetições usam fala curta e não duplicam datas/eventos ou autosaves.
+- O primeiro encontro pode acontecer antes da aula ou no hall ao meio-dia. Neste segundo caso, a primeira interação apresenta a colega e a seguinte permite o almoço, ainda no mesmo dia. Não é necessário obrigar um encontro automático ou mudar o roteiro do professor. Se perder o almoço, a oportunidade volta em outro dia letivo; o evento não é creditado por mera passagem do tempo.
+- Movimento e tempo natural pausam durante a conversa. Diálogos não avançam minutos nem conferem presença acadêmica. R/T/M, portas e debug não podem alterar o contexto de uma conversa pendente. Carregamento/troca interna de mapa/sono limpam a continuação antes de fechar o painel.
+- `save_manager.gd` e snapshot: bloco **opcional** `classmate` no esquema **3**, com `met_at` e `lunch_at` em minutos absolutos, `-1` para desconhecido. Validação rejeita campos/tipos inválidos, futuro, almoço anterior ao encontro e registro fora dos dias/horários elegíveis. Ausência do bloco em save anterior inicia ambos desconhecidos sem alterar horário, posição ou frequência. Migrações 1/2 e preferência separada continuam compatíveis.
+- Auto opcional grava após concluir cada conversa nova. Abrir, cancelar ou repetir não grava. Manual e auto continuam separados; carregar manual anterior restaura o conhecimento anterior. Não há progresso social global fora dos arquivos de partida. A NPC mudar de local sem jogador não revela encontros, sentimentos, vínculos privados ou memórias desconhecidas. Nenhum diário/afinidade novo foi implementado.
+- `tests/classmate_encounter_test.gd`: percurso com física de sala → aula → hall e entradas reais de teclado/mouse, persistência e casos fora do caminho principal. README/AGENTS/nota da planta atualizados com controles, dados, hipóteses e próxima tarefa.
+
+### Como experimentar
+
+Godot 4.7, F5. Na sala, converse com o quadrado rosa à direita das carteiras inferiores usando E. Conclua o primeiro contato. Use a agenda para esperar até 09h e participar da aula; após a apresentação do professor, o horário chega a 12h. Saia para o hall e vá ao centro da área de convivência, próximo ao guia. E abre a conversa de almoço. Conclua antes de esperar pela aula das 13h. Se ainda não conhecer a colega quando chegar ao hall, converse duas vezes para as duas cenas. Esc/Fechar permite cancelar e tentar de novo; não há obrigação de conversar.
+
+### Validação executada
+
+Godot **4.7.2.stable.official.ed1daf0bf**. Importação/editor headless final sem erros. Todos os saves/settings dos runners ficam em `user://test_runs/`, sem alterar slots reais. Capturas renderizadas em 1280×720 e inspecionadas, com os dois personagens separados e texto legível. Sem playtest humano.
+
+| Runner | Verificações finais | Resultado |
+|---|---:|---|
+| Colega renderizado | 82 (inclui duas capturas) | zero falhas |
+| Professor | 45 | zero falhas |
+| Agenda acadêmica | 57 | zero falhas |
+| Cidade/universidade | 227 | zero falhas |
+| Escala/movimento | 60 | zero falhas |
+| Relógio | 41 | zero falhas |
+| Tempo em interiores | 42 | zero falhas |
+| Ações temporizadas | 34 | zero falhas |
+| Diálogo anterior | 30 | zero falhas |
+| Sono/save/calendário | 51 | zero falhas |
+| Resolução/percurso | 12 | zero falhas |
+| **Total sem somar variantes repetidas** | **681** | **zero falhas** |
+
+Colega: ator correto e proximidade (incluindo ator inexistente), caminhos físicos desde a porta até a colega, da colega ao ponto de aula, aula/professor até meio-dia e caminhada de saída até o hall; teclado/mouse, held E, bloqueio de atividades/portas/debug; cancelar intro e cancelar última fala de almoço; duas cenas distintas no mesmo dia; tempo/fração/frequência preservados; eventos/datas sem duplicação; nenhuma gravação com auto desligado; cancelamento/repetição sem autosave; manual separado, load durante diálogo, rollback e retomada correta da localização; schema 3 anterior sem bloco, originais intactos; primeiro contato no almoço seguido de segunda conversa; dados inválidos/futuros/invertidos/fora da janela; troca interna de área; limites exatos 05h59/06h/11h59/12h/12h59/13h/16h59/17h; fim de semana/férias; disponibilidade sem conhecimento fabricado e almoço perdido recuperável no próximo dia letivo.
+
+Comando novo: `godot --headless --path . --script res://tests/classmate_encounter_test.gd`. Para duas capturas, retirar `--headless` e acrescentar `-- --capture`. Demais runners conforme README. Logs em `test-results/p205-*.log`, ignorados pelo Git; o runner do professor usa `p205-professor.log`. As 80 verificações da variante headless da colega estão contidas nas 82 renderizadas; não somar novamente. A circulação urbana foi repetida com aceleração de teste, sem nova medição de caminhada em velocidade normal.
+
+![Primeiro contato na sala](screenshots/classmate_introduction.png)
+
+![Conversa de almoço no hall](screenshots/classmate_lunch.png)
+
+### Limites e próxima tarefa
+
+Identidade, personalidade/falas finais, rotina completa e arte da colega pendentes. A presença mínima usa horários fixos em dados, sem navegação entre áreas; não inclui refeição com duração/preço, seleção de prato, sistema geral de amizades ou diário social. Dois encontros amigáveis não afirmam romance nem revelam afinidade interna. Mapa, escala, sono, calendário, filtros, agenda/presenças e saves anteriores preservados. Drowned não foi acessado/modificado.
+
+Próxima tarefa: **P2-06 — banco de questões e primeira pergunta**, quatro alternativas, reação e registro da resposta.

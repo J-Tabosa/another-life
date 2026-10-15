@@ -31,6 +31,9 @@ var academic_panel: AcademicPanel
 var city_map: CityMapPanel
 var first_lesson_pending: bool = false
 var _first_lesson_minutes: int = -1
+var classmate: ClassmateEncounter
+var _classmate_pending: StringName = &""
+var _classmate_minutes: int = -1
 @onready var player: CharacterBody2D = $Player
 @onready var time_manager: TimeManager = $TimeManager
 @onready var dialogue_panel: DialoguePanel = $HUD/DialoguePanel
@@ -52,6 +55,10 @@ func _ready() -> void:
 	academics = AcademicSchedule.new()
 	academics.clock = time_manager
 	add_child(academics)
+	classmate = ClassmateEncounter.new()
+	classmate.clock = time_manager
+	add_child(classmate)
+	classmate.changed.connect(_refresh_classmate)
 	academic_panel = AcademicPanel.new()
 	academic_panel.schedule = academics
 	$HUD.add_child(academic_panel)
@@ -94,6 +101,7 @@ func _ready() -> void:
 	dialogue_panel.opened.connect(_sync_controls)
 	dialogue_panel.closed.connect(_sync_controls)
 	dialogue_panel.finished.connect(_on_lesson_dialogue_finished)
+	dialogue_panel.finished.connect(_on_classmate_dialogue_finished)
 	get_viewport().size_changed.connect(_layout_hud)
 	_layout_hud()
 	change_area(&"room", &"start")
@@ -202,6 +210,7 @@ func change_area(target: StringName, spawn: StringName) -> void:
 		transitioning = false
 		return
 	first_lesson_pending = false
+	_classmate_pending = &""
 	dialogue_panel.close()
 	if is_instance_valid(area):
 		$World.remove_child(area)
@@ -210,6 +219,7 @@ func change_area(target: StringName, spawn: StringName) -> void:
 	area_id = target
 	area.tile_size = tile_size
 	$World.add_child(area)
+	_refresh_classmate()
 	# Natural time is enabled only in the outdoor laboratory.
 	_sync_controls()
 	for target_node in get_tree().get_nodes_in_group("interactables"):
@@ -252,6 +262,54 @@ func _open_dialogue(data: DialogueData) -> void:
 		dialogue_panel.start(data)
 
 
+func _refresh_classmate() -> void:
+	if loading_slot or not is_instance_valid(area):
+		return
+	var actor := area.get_node_or_null("Classmate") as Area2D
+	var location := classmate.location()
+	if location.is_empty() or location.area != String(area_id):
+		if actor != null:
+			area.remove_child(actor)
+			actor.queue_free()
+		return
+	if actor == null:
+		actor = preload("res://scenes/world/dialogue_npc.tscn").instantiate()
+		actor.set_script(preload("res://scripts/world/classmate_npc.gd"))
+		actor.name = "Classmate"
+		actor.meeting_requested.connect(_open_classmate_dialogue)
+		area.add_child(actor)
+	var profile := ClassmateEncounter.profile()
+	actor.position = WorldLayouts.point(location.at)
+	actor.marker_key = StringName(profile.marker)
+	actor.hint_key = StringName(profile.hint)
+	actor.marker_offset = WorldLayouts.point(profile.marker_offset)
+	actor.marker_color = Color("e6b8c7")
+	actor.dialogue = classmate.dialogue()
+	actor.queue_redraw()
+
+
+func _open_classmate_dialogue(actor: Area2D) -> void:
+	if _modal_open() or not is_instance_valid(actor) or actor != area.get_node_or_null("Classmate") or not actor.can_interact(player):
+		return
+	_classmate_pending = classmate.conversation()
+	_classmate_minutes = time_manager.world_minutes
+	if not dialogue_panel.start(classmate.dialogue()):
+		_classmate_pending = &""
+		_sync_controls()
+
+
+func _on_classmate_dialogue_finished(was_completed: bool) -> void:
+	if _classmate_pending.is_empty():
+		return
+	var id := _classmate_pending
+	_classmate_pending = &""
+	var location := classmate.location()
+	var valid: bool = not transitioning and not loading_slot and not sleep_manager.pending and time_manager.world_minutes == _classmate_minutes and not location.is_empty() and location.area == String(area_id)
+	_classmate_minutes = -1
+	if was_completed and valid and classmate.remember(id):
+		_autosave()
+
+
 func _sync_controls() -> void:
 	var blocked := _modal_open()
 	player.controls_enabled = not blocked
@@ -263,7 +321,7 @@ func _sync_controls() -> void:
 
 
 func _modal_open() -> bool:
-	return transitioning or first_lesson_pending or dialogue_panel.active or sleep_manager.pending or (is_instance_valid(debug_panel) and debug_panel.visible) or (is_instance_valid(academic_panel) and academic_panel.visible) or (is_instance_valid(city_map) and city_map.visible)
+	return transitioning or first_lesson_pending or not _classmate_pending.is_empty() or dialogue_panel.active or sleep_manager.pending or (is_instance_valid(debug_panel) and debug_panel.visible) or (is_instance_valid(academic_panel) and academic_panel.visible) or (is_instance_valid(city_map) and city_map.visible)
 
 
 func _open_academics() -> void:
@@ -323,7 +381,7 @@ func _open_debug() -> void:
 
 
 func debug_jump(minutes: int) -> bool:
-	if first_lesson_pending or sleep_manager.pending or minutes < time_manager.world_minutes:
+	if first_lesson_pending or not _classmate_pending.is_empty() or sleep_manager.pending or minutes < time_manager.world_minutes:
 		return false
 	debug_panel.close()
 	journey.reset()
@@ -338,6 +396,7 @@ func debug_jump(minutes: int) -> bool:
 
 func _on_sleep_limit() -> void:
 	first_lesson_pending = false
+	_classmate_pending = &""
 	dialogue_panel.close()
 	debug_panel.close()
 	academic_panel.close()
@@ -374,7 +433,7 @@ func _on_woke(duration_minutes: int) -> void:
 
 
 func snapshot() -> Dictionary:
-	return {"schema_version": SaveManager.SCHEMA_VERSION, "world": time_manager.get_clock_state(), "player": {"name": protagonist_name, "area": String(area_id), "x": player.position.x, "y": player.position.y}, "sleep": sleep_manager.get_state(), "lab": {"tile_size": tile_size}, "academics": academics.get_state()}
+	return {"schema_version": SaveManager.SCHEMA_VERSION, "world": time_manager.get_clock_state(), "player": {"name": protagonist_name, "area": String(area_id), "x": player.position.x, "y": player.position.y}, "sleep": sleep_manager.get_state(), "lab": {"tile_size": tile_size}, "academics": academics.get_state(), "classmate": classmate.get_state()}
 
 
 func load_slot(kind: String) -> bool:
@@ -396,6 +455,7 @@ func load_slot(kind: String) -> bool:
 func _restore_state(state: Dictionary) -> void:
 	loading_slot = true
 	first_lesson_pending = false
+	_classmate_pending = &""
 	dialogue_panel.close()
 	debug_panel.close()
 	academic_panel.close()
@@ -403,9 +463,12 @@ func _restore_state(state: Dictionary) -> void:
 	tile_size = int(state.lab.tile_size)
 	protagonist_name = state.player.name
 	academics.suspended = true
+	classmate.suspended = true
 	time_manager.restore_clock(int(state.world.minutes), float(state.world.fraction), int(state.world.weekday_offset))
 	academics.restore(state.academics)
+	classmate.restore(state.get("classmate", {}))
 	academics.suspended = false
+	classmate.suspended = false
 	sleep_manager.alarm_minutes = int(state.sleep.alarm_minutes)
 	sleep_manager.pending = state.sleep.pending
 	sleep_manager.forced = state.sleep.forced
@@ -415,6 +478,7 @@ func _restore_state(state: Dictionary) -> void:
 	player.position = Vector2(state.player.x, state.player.y)
 	journey.reset()
 	loading_slot = false
+	_refresh_classmate()
 	if sleep_manager.pending:
 		sleep_panel.open()
 	_sync_controls()

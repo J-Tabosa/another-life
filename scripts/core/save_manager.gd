@@ -95,6 +95,10 @@ static func validate_state(state: Dictionary, legacy: bool = false) -> bool:
 		return false
 	if not legacy and (not state.get("academics") is Dictionary or not AcademicSchedule.valid_state(state.academics, int(world.minutes), int(world.weekday_offset))):
 		return false
+	# Optional in schema 3: older saves have not met the classmate yet.
+	if not legacy and state.has("classmate"):
+		if not state.classmate is Dictionary or not ClassmateEncounter.valid_state(state.classmate, int(world.minutes), int(world.weekday_offset)):
+			return false
 	return true
 
 
