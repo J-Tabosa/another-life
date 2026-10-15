@@ -25,6 +25,9 @@ var sleep_panel: SleepPanel
 var debug_panel: CalendarDebugPanel
 var journey := WalkingJourney.new()
 var fade: SceneFade
+var academics: AcademicSchedule
+var academic_panel: AcademicPanel
+var city_map: CityMapPanel
 @onready var player: CharacterBody2D = $Player
 @onready var time_manager: TimeManager = $TimeManager
 @onready var dialogue_panel: DialoguePanel = $HUD/DialoguePanel
@@ -43,6 +46,18 @@ func _ready() -> void:
 	sleep_manager = SleepManager.new()
 	sleep_manager.clock = time_manager
 	add_child(sleep_manager)
+	academics = AcademicSchedule.new()
+	academics.clock = time_manager
+	add_child(academics)
+	academic_panel = AcademicPanel.new()
+	academic_panel.schedule = academics
+	$HUD.add_child(academic_panel)
+	academic_panel.visibility_updated.connect(_sync_controls)
+	academic_panel.attendance_requested.connect(_attend_class)
+	academic_panel.wait_requested.connect(_wait_for_class)
+	city_map = CityMapPanel.new()
+	$HUD.add_child(city_map)
+	city_map.visibility_updated.connect(_sync_controls)
 	sleep_panel = SleepPanel.new()
 	sleep_panel.name = "SleepPanel"
 	sleep_panel.manager = sleep_manager
@@ -87,6 +102,7 @@ func _setup_inputs() -> void:
 		"interact": [KEY_E], "compare_scale": [KEY_T], "show_frame": [KEY_F],
 		"test_activity": [KEY_R],
 		"debug_calendar": [KEY_C], "toggle_fullscreen": [KEY_F11],
+		"academic_schedule": [KEY_J], "city_map": [KEY_M],
 	}
 	for action: String in bindings:
 		if InputMap.has_action(action):
@@ -120,6 +136,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		_run_test_activity()
 	elif event.is_action_pressed("debug_calendar") and not event.is_echo():
 		_open_debug()
+	elif event.is_action_pressed("academic_schedule") and not event.is_echo():
+		_open_academics()
+	elif event.is_action_pressed("city_map") and not event.is_echo():
+		city_map.region_id = area_id
+		city_map.player_position = player.position
+		city_map.open()
 
 
 func _input(event: InputEvent) -> void:
@@ -194,6 +216,8 @@ func change_area(target: StringName, spawn: StringName) -> void:
 			target_node.dialogue_requested.connect(_open_dialogue)
 		if target_node.has_signal("sleep_requested"):
 			target_node.sleep_requested.connect(func() -> void: sleep_manager.request())
+		if target_node.has_signal("lesson_requested"):
+			target_node.lesson_requested.connect(_open_academics)
 	for destination in get_tree().get_nodes_in_group("journey_destinations"):
 		if area.is_ancestor_of(destination):
 			destination.reached.connect(_on_journey_arrival)
@@ -234,7 +258,29 @@ func _sync_controls() -> void:
 
 
 func _modal_open() -> bool:
-	return transitioning or dialogue_panel.active or sleep_manager.pending or debug_panel.visible
+	return transitioning or dialogue_panel.active or sleep_manager.pending or (is_instance_valid(debug_panel) and debug_panel.visible) or (is_instance_valid(academic_panel) and academic_panel.visible) or (is_instance_valid(city_map) and city_map.visible)
+
+
+func _open_academics() -> void:
+	if not _modal_open():
+		academic_panel.in_classroom = area_id == &"classroom"
+		academic_panel.open()
+
+
+func _academic_action_allowed() -> bool:
+	return area_id == &"classroom" and academic_panel.visible and not transitioning and not sleep_manager.pending and not dialogue_panel.active and not debug_panel.visible and not city_map.visible
+
+
+func _attend_class() -> void:
+	if _academic_action_allowed() and academics.attend():
+		academic_panel.refresh()
+		_autosave()
+
+
+func _wait_for_class() -> void:
+	if _academic_action_allowed() and academics.current_session().is_empty() and academics.wait_for_class():
+		academic_panel.refresh()
+		_autosave()
 
 
 func _open_debug() -> void:
@@ -260,6 +306,8 @@ func debug_jump(minutes: int) -> bool:
 func _on_sleep_limit() -> void:
 	dialogue_panel.close()
 	debug_panel.close()
+	academic_panel.close()
+	city_map.close()
 	sleep_manager.request(true, area_id != &"room")
 
 
@@ -292,7 +340,7 @@ func _on_woke(duration_minutes: int) -> void:
 
 
 func snapshot() -> Dictionary:
-	return {"schema_version": SaveManager.SCHEMA_VERSION, "world": time_manager.get_clock_state(), "player": {"name": protagonist_name, "area": String(area_id), "x": player.position.x, "y": player.position.y}, "sleep": sleep_manager.get_state(), "lab": {"tile_size": tile_size}}
+	return {"schema_version": SaveManager.SCHEMA_VERSION, "world": time_manager.get_clock_state(), "player": {"name": protagonist_name, "area": String(area_id), "x": player.position.x, "y": player.position.y}, "sleep": sleep_manager.get_state(), "lab": {"tile_size": tile_size}, "academics": academics.get_state()}
 
 
 func load_slot(kind: String) -> bool:
@@ -315,9 +363,14 @@ func _restore_state(state: Dictionary) -> void:
 	loading_slot = true
 	dialogue_panel.close()
 	debug_panel.close()
+	academic_panel.close()
+	city_map.close()
 	tile_size = int(state.lab.tile_size)
 	protagonist_name = state.player.name
+	academics.suspended = true
 	time_manager.restore_clock(int(state.world.minutes), float(state.world.fraction), int(state.world.weekday_offset))
+	academics.restore(state.academics)
+	academics.suspended = false
 	sleep_manager.alarm_minutes = int(state.sleep.alarm_minutes)
 	sleep_manager.pending = state.sleep.pending
 	sleep_manager.forced = state.sleep.forced
@@ -371,6 +424,9 @@ func _interaction_target() -> Area2D:
 		if not area.is_ancestor_of(candidate) or not candidate.can_interact(player):
 			continue
 		var distance := player.global_position.distance_squared_to(candidate.global_position)
+		# At an entrance, prefer entering over the nearby location description.
+		if candidate.has_signal("transition_requested"):
+			distance -= 10000
 		if distance < nearest_distance:
 			nearest = candidate
 			nearest_distance = distance

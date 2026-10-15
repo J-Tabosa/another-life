@@ -1,4 +1,6 @@
-# Esqueleto urbano e universidade — P2-02
+# Esqueleto urbano e universidade — P2-02 (histórico)
+
+**Substituído em 15/10/2026:** planta vigente em [reference_city.md](reference_city.md). As dimensões, posições e capturas abaixo documentam a entrega anterior.
 
 O criador pediu a substituição das duas áreas pequenas e do corredor reto por um esqueleto de cidade, com curvas, subidas/descidas, acessos futuros e fade. Esta ampliação acompanha P2-02; não autoriza implementar sistemas acadêmicos/hobbies/lojas completos.
 

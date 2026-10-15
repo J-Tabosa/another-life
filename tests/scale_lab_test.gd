@@ -95,7 +95,7 @@ func run() -> void:
 			interaction.pressed = true
 			lab._unhandled_input(interaction)
 			await settle()
-			check(lab.area_id == &"street" and player.position == Vector2(480, 402), "room to street spawn")
+			check(lab.area_id == &"street" and player.position == WorldLayouts.point(WorldLayouts.region("street").spawns.door), "room to street spawn")
 			check(lab.get_node("World").get_child_count() == 1, "one active map")
 			Input.action_press("move_up")
 			for tick in range(25):

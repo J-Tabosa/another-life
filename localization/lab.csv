@@ -3,7 +3,7 @@ LAB_TITLE,LAB — PLACEHOLDERS
 LAB_ROOM,Quarto
 LAB_STREET,Rua residencial de teste
 LAB_SCALE,Tile %d px · quadro 128×128 · escala provisória
-LAB_CONTROLS,WASD / setas: andar · E: interagir · T: comparar 32/64 · F: quadro e colisão
+LAB_CONTROLS,WASD / setas: andar · E: interagir · T: comparar 32/64 · F: quadro · M: mapa · J: agenda
 LAB_INTERACT,E — entrar / sair
 LAB_BED,Cama provisória
 LAB_DESK,Mesa provisória
@@ -73,8 +73,8 @@ JOURNEY_RESULT,%s · %02d:%02d · %.1fs / +%d min · %s
 JOURNEY_EARLY,%d min antes das 09h (teste)
 JOURNEY_LATE,%d min depois das 09h (teste)
 CITY_RESIDENTIAL,Fliegen · bairro residencial
-CITY_RIVERSIDE,Fliegen · via do rio e colina
-CITY_CAMPUS,Horizonte · campus
+CITY_RIVERSIDE,Fliegen · centro e estação
+CITY_CAMPUS,Fliegen · oeste e Horizonte
 CITY_UNIVERSITY,Horizonte · hall
 CITY_CLASSROOM,Horizonte · sala de História
 CITY_HOME,Casa · PLACEHOLDER
@@ -94,7 +94,7 @@ CITY_CAFE_RESERVE,Café · reservado
 CITY_COURTYARD,Pátio de convivência
 CITY_HISTORY,História · sala PLACEHOLDER
 CITY_COMMON,Convivência · PLACEHOLDER
-CITY_LESSON_PLACEHOLDER,Ponto de aula · PLACEHOLDER
+CITY_LESSON_PLACEHOLDER,Agenda de aulas
 CITY_SIGN_CAMPUS_DOWN,Horizonte ↓
 CITY_SIGN_COAST_LEFT,← Calçadão · reservado
 CITY_SIGN_HOME_LEFT,← Bairro residencial
@@ -107,10 +107,10 @@ CITY_SIGN_CAFE_UP,Café ↑ · reservado
 CITY_SIGN_HISTORY_UP,História ↑ à direita
 CITY_SIGN_EXIT_DOWN,Saída ↓
 CITY_ENTER_HOME,E — entrar em casa
-CITY_ENTER_ROUTE,E — via do rio
+CITY_ENTER_ROUTE,E — centro e estação
 CITY_RETURN_NEIGHBORHOOD,E — bairro residencial
-CITY_ENTER_CAMPUS,E — entrar no campus
-CITY_RETURN_RIVER,E — voltar pela via do rio
+CITY_ENTER_CAMPUS,E — região oeste / Horizonte
+CITY_RETURN_RIVER,E — voltar ao centro
 CITY_ENTER_HALL,E — entrar na Horizonte
 CITY_EXIT_HALL,E — sair para o campus
 CITY_ENTER_CLASSROOM,E — sala de História
@@ -119,5 +119,51 @@ CITY_ACCESS_LESSON,E — acessar ponto de aula
 CITY_GUIDE,Guia · NPC PLACEHOLDER
 CITY_GUIDE_01,Bem-vindo à Horizonte. A sala de História fica no corredor à direita e depois acima.
 CITY_GUIDE_02,Pode explorar o hall e a sala com calma. O tempo natural fica parado aqui dentro.
-CITY_LESSON_01,Esta é a sala de História. A aula estará disponível em uma próxima versão do protótipo.
+CITY_LESSON_01,Consulte a agenda para esperar ou participar das aulas de História.
 LOAD_MIGRATED,Save anterior carregado na entrada segura do novo mapa.
+ACADEMIC_TITLE,Agenda — História · Universidade Horizonte
+ACADEMIC_HOURS,Manhã 09h–12h · Tarde 13h–17h · Segunda a sexta fora das férias
+ACADEMIC_TODAY,Hoje
+ACADEMIC_MORNING,Manhã
+ACADEMIC_AFTERNOON,Tarde
+ACADEMIC_PRESENT,Presença registrada
+ACADEMIC_ABSENT,Falta registrada
+ACADEMIC_FUTURE,Aguardando horário
+ACADEMIC_ONGOING,Em andamento — ainda pode participar
+ACADEMIC_NO_CLASS,Sem aula
+ACADEMIC_UNTRACKED,Anterior ao início deste registro
+ACADEMIC_GO_CLASSROOM,Vá ao ponto de aula na sala para participar ou esperar.
+ACADEMIC_ATTEND,Participar — avançar até o fim da aula
+ACADEMIC_WAIT,Esperar até a próxima aula de hoje
+ACADEMIC_HISTORY,Registro dos últimos sete dias
+CITY_INSPECT_PLACE,E — consultar local
+CITY_PLACE_RESERVED,Local reservado — interior e atividades ainda indisponíveis.
+CITY_MAP_TITLE,Fliegen — mapa de referência · escala ampliada 6×
+CITY_MAP_HELP,M: mapa · J: agenda · E: acesso destacado · Esc: fechar
+CITY_MAP_INTERIOR,Você está em um interior.
+CITY_MAP_POSITION,Posição na imagem de referência: %.0f / %.0f
+PLACE_WHOLESALE,Supermercado Atacadista
+PLACE_MAPLE,Maple Heights
+PLACE_NORTH_COMMERCE,Comércio Norte
+PLACE_SUNNYVIEW,Sunnyview
+PLACE_LIGHTHOUSE,Lighthouse Point
+PLACE_STATION,Central Station
+PLACE_UNIVERSITY,Universidade Horizonte
+PLACE_DOWNTOWN,Downtown
+PLACE_HOSPITAL,City Hospital
+PLACE_SCHOOL,Eastwood School
+PLACE_PARK,Willow Park
+PLACE_LIBRARY,Library
+PLACE_BEACH,Seabreeze Beach
+PLACE_MARKET,Market Street
+PLACE_CAFE,Café Row
+PLACE_ARCADE,Arcade
+PLACE_MUSIC,Live Music
+PLACE_RESIDENTIAL,Residential Block
+PLACE_HARBOR,Harbor District
+PLACE_AMUSEMENT,Parque de Diversões
+PLACE_CAMPING,Camping
+PLACE_HIDDEN_BEACH,Praia Escondida
+
+CITY_CROSS_SECTOR,E — continuar pela rua na próxima região
+CITY_UNIVERSITY_ACCESS,Entre pela porta destacada para acessar o hall e a sala de História.

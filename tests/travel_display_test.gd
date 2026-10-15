@@ -64,25 +64,25 @@ func run() -> void:
 	await settle()
 	lab.change_area(&"street", &"door")
 	await interact(lab, "RouteDoor")
-	check(lab.area_id == &"route" and clock.running and camera.limit_right == 6000 and camera.limit_bottom == 3600, "street portal opens a large external route and extends camera limits")
+	check(lab.area_id == &"route" and clock.running and camera.limit_right == 2460 and camera.limit_bottom == 5826, "street portal opens a large external route and extends camera limits")
 	var from: Vector2 = lab.player.position
 	var start_minutes := clock.world_minutes
 	var started := Time.get_ticks_usec()
 	# Physics movement reaches the far portal at the production speed. Real-time
 	# option uses automatic ticks; short default verifies a section plus portals.
 	clock.set_process(false)
-	Input.action_press("move_right")
-	while lab.player.position.x < from.x + 400 and Time.get_ticks_usec() - started < 5_000_000:
+	Input.action_press("move_left")
+	while lab.player.position.x > from.x - 400 and Time.get_ticks_usec() - started < 5_000_000:
 		await physics_frame
-	Input.action_release("move_right")
+	Input.action_release("move_left")
 	await settle()
-	check(lab.player.position.x >= from.x + 400, "walking follows the first road section with real collision physics")
+	check(lab.player.position.x <= from.x - 400, "walking follows the first road section with real collision physics")
 	await interact(lab, "CampusDoor")
-	check(lab.area_id == &"campus" and camera.limit_right == 3200 and clock.running and lab.journey.active, "campus arrival preserves date and keeps walking trial active until the building entrance")
+	check(lab.area_id == &"campus" and camera.limit_right == 3660 and clock.running and lab.journey.active, "campus arrival preserves date and keeps walking trial active until the building entrance")
 	await interact(lab, "Door")
-	check(lab.area_id == &"route" and lab.player.position == Vector2(5400, 500), "campus exit returns to correct end of the route")
+	check(lab.area_id == &"route" and lab.player.position == WorldLayouts.point(WorldLayouts.region("route").spawns.campus), "campus exit returns to correct end of the route")
 	await interact(lab, "Door")
-	check(lab.area_id == &"street" and lab.player.position == Vector2(2790, 2030), "route exit returns to the residential marker")
+	check(lab.area_id == &"street" and lab.player.position == WorldLayouts.point(WorldLayouts.region("street").spawns.route), "route exit returns to the residential marker")
 	clock.set_process(false)
 	if "--capture" in OS.get_cmdline_user_args():
 		for season in range(4):

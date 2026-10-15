@@ -18,6 +18,8 @@ func interact(player: CharacterBody2D) -> void:
 
 
 func _draw() -> void:
+	if label_key.is_empty():
+		draw_arc(Vector2.ZERO, 18, 0, TAU, 16, Color("fff1ae"), 3, true)
 	if not label_key.is_empty():
 		draw_rect(Rect2(-48, -16, 96, 32), Color("d5bc7e"))
 		draw_string(ThemeDB.fallback_font, Vector2(-90, -30), tr(label_key), HORIZONTAL_ALIGNMENT_LEFT, -1, 18)

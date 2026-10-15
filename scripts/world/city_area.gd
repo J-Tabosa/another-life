@@ -38,7 +38,7 @@ func prepare() -> void:
 		portal.target_area = StringName(data.target)
 		portal.spawn_id = StringName(data.spawn)
 		portal.hint_key = StringName(data.hint)
-		portal.label_key = StringName(data.hint)
+		portal.label_key = StringName(data.get("label", data.hint))
 		add_child(portal)
 	for data in layout.signs:
 		var sign_node: Node2D = preload("res://scenes/world/wayfinding_sign.tscn").instantiate()
@@ -63,6 +63,17 @@ func prepare() -> void:
 		lesson.name = "LessonPoint"
 		lesson.position = WorldLayouts.point(layout.lesson)
 		add_child(lesson)
+	if layout.has("reference_crop"):
+		var crop := WorldLayouts.rectangle(layout.reference_crop)
+		for data in ReferenceCity.data().pois:
+			if data.sector != String(region_id):
+				continue
+			var marker := Area2D.new()
+			marker.set_script(preload("res://scripts/world/place_marker.gd"))
+			marker.name = "Place_" + data.id
+			marker.position = ReferenceCity.local_point(data.at, crop)
+			marker.title_key = StringName("PLACE_" + String(data.id).to_upper())
+			add_child(marker)
 
 
 func rebuild() -> void:
@@ -72,6 +83,8 @@ func rebuild() -> void:
 	collision_root = Node2D.new()
 	add_child(collision_root)
 	solids = [Rect2(0, 0, map_size.x, 32), Rect2(0, map_size.y - 32, map_size.x, 32), Rect2(0, 0, 32, map_size.y), Rect2(map_size.x - 32, 0, 32, map_size.y)]
+	if layout.has("reference_crop"):
+		solids.append_array(ReferenceCity.collision_rects(WorldLayouts.rectangle(layout.reference_crop)))
 	for category in ["buildings", "water", "cliffs"]:
 		for data in layout[category]:
 			solids.append(WorldLayouts.rectangle(data))
@@ -89,6 +102,9 @@ func rebuild() -> void:
 
 func _draw() -> void:
 	if layout.is_empty():
+		return
+	if layout.has("reference_crop"):
+		ReferenceRenderer.draw(self, WorldLayouts.rectangle(layout.reference_crop))
 		return
 	draw_rect(Rect2(Vector2.ZERO, map_size), Color("526f57") if exterior else Color("927f66"))
 	for category in ["terraces", "plazas", "water"]:

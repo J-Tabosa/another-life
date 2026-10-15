@@ -1,8 +1,9 @@
 class_name SaveManager
 extends Node
 
-const SCHEMA_VERSION := 2
+const SCHEMA_VERSION := 3
 const LEGACY_MAP_SIZES := {"room": Vector2(960, 640), "street": Vector2(960, 640), "route": Vector2(12800, 1600), "campus": Vector2(2400, 1600)}
+const V2_MAP_SIZES := {"room": Vector2(960, 640), "street": Vector2(3200, 2400), "route": Vector2(6000, 3600), "campus": Vector2(3200, 2600), "university": Vector2(1600, 1100), "classroom": Vector2(1400, 1000)}
 var storage_root: String = "user://saves/slot_01"
 var settings_path: String = "user://settings.json"
 var autosave_enabled: bool = false
@@ -20,15 +21,16 @@ func load_slot(kind: String) -> Dictionary:
 	if kind not in ["manual", "auto"]:
 		return {}
 	var state := _read_json(storage_root.path_join(kind + ".json"))
-	if state.get("schema_version") == 1 and validate_state(state, true):
+	if (state.get("schema_version") == 1 or state.get("schema_version") == 2) and validate_state(state, true):
 		# Old outside geometry no longer exists. Keep all gameplay values and
 		# place the player at this region's safe entrance, without writing back.
 		state.schema_version = SCHEMA_VERSION
-		if state.player.area != "room":
+		if state.player.area in ["street", "route", "campus"]:
 			var safe: Vector2 = WorldLayouts.point(WorldLayouts.region(state.player.area).spawns.door)
 			state.player.x = safe.x
 			state.player.y = safe.y
-		state.migrated_from_legacy = state.player.area != "room"
+		state.academics = {"started_at": int(state.world.minutes), "evaluated_until": int(state.world.minutes), "present": {}}
+		state.migrated_from_legacy = true
 	return state if validate_state(state) else {}
 
 
@@ -50,7 +52,7 @@ static func _whole(value: Variant, minimum: int, maximum: int) -> bool:
 
 
 static func validate_state(state: Dictionary, legacy: bool = false) -> bool:
-	if state.get("schema_version") != (1 if legacy else SCHEMA_VERSION):
+	if (legacy and state.get("schema_version") != 1 and state.get("schema_version") != 2) or (not legacy and state.get("schema_version") != SCHEMA_VERSION):
 		return false
 	for key in ["world", "player", "sleep", "lab"]:
 		if not state.get(key) is Dictionary:
@@ -65,7 +67,9 @@ static func validate_state(state: Dictionary, legacy: bool = false) -> bool:
 		return false
 	if not player.get("name") is String or player.name.length() > 80 or not player.get("area") is String:
 		return false
-	var bounds: Vector2 = LEGACY_MAP_SIZES.get(player.area, Vector2.ZERO) if legacy else WorldLayouts.bounds(player.area)
+	var bounds: Vector2 = WorldLayouts.bounds(player.area)
+	if legacy:
+		bounds = (LEGACY_MAP_SIZES if state.schema_version == 1 else V2_MAP_SIZES).get(player.area, Vector2.ZERO)
 	if bounds == Vector2.ZERO:
 		return false
 	for axis in ["x", "y"]:
@@ -88,6 +92,8 @@ static func validate_state(state: Dictionary, legacy: bool = false) -> bool:
 	if sleep.pending and player.area != "room":
 		return false
 	if sleep.forced and int(world.minutes) % 1440 != 240:
+		return false
+	if not legacy and (not state.get("academics") is Dictionary or not AcademicSchedule.valid_state(state.academics, int(world.minutes), int(world.weekday_offset))):
 		return false
 	return true
 
