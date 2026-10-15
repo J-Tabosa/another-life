@@ -2,7 +2,17 @@
 
 Protótipo em **Godot 4.7 / GDScript**, validado na **4.7.2 oficial**. Cânone e roadmap no [GDD](docs/ANOTHER_LIFE_GDD_DIA0.md), instruções em [AGENTS.md](AGENTS.md) e [migração da engine](docs/godot_4_7_migration.md).
 
-## Entrega atual — P2-05
+## Entrega atual — P2-06
+
+Banco em `data/questions/history.json` e **primeira pergunta na primeira aula da tarde frequentada**. Na sala, abra a agenda com E/J e escolha **Participar** entre 13h e 17h de um dia letivo. São quatro alternativas: clique ou use **1–4**, sem cronômetro. A pergunta inicial trata do ano do Grito do Ipiranga; conteúdo de teste com [fonte na Biblioteca Nacional](https://bndigital.bn.gov.br/dossies/gramaticas-e-dicionarios-do-portugues/linha-do-tempo/sobre-as-efemerides/1822-independencia-do-brasil/), sem definir a ementa final do curso.
+
+Responder registra alternativa, acerto/erro, data/hora de entrada e turno, concede presença e avança os minutos restantes até **17h**. O professor reage com incentivo ou correção gentil; erro não acrescenta penalidade. A reação fica aberta até **Continuar/Enter/Esc**. **Cancelar/Esc antes de responder** volta à agenda sem gastar tempo ou conceder presença. Depois da escolha, fechar não apaga nem troca a resposta. J mostra o registro ao final do histórico, inclusive depois de carregar a partida. Um acerto fica registrado para o progresso acadêmico; pesos/notas/recompensas numéricas permanecem **[PENDENTE]**.
+
+Se perder a manhã ou o primeiro dia, a pergunta espera a primeira participação elegível à tarde. Caso a apresentação do professor ainda esteja pendente, ela vem antes das alternativas; a conclusão só é gravada junto da resposta/presença. Saves do esquema 3 anteriores à P2-06 continuam válidos: ausência de `academics.question_answers` significa nenhuma resposta registrada. Manual antes do sono e auto opcional preservam a resposta separadamente; carregar um save anterior restaura o estado daquele momento. A pergunta não se repete após uma resposta, mesmo incorreta.
+
+[Quatro alternativas](docs/screenshots/class_question.png) · [Reação ao acerto](docs/screenshots/class_question_correct.png) · [Reação ao erro](docs/screenshots/class_question_incorrect.png) · [Janela 960×540](docs/screenshots/class_question_notebook.png)
+
+## Colega e almoço — P2-05 preservada
 
 Primeira colega de História placeholder com **duas conversas distintas**: primeiro contato e conversa do almoço. E perto do quadrado rosa inicia o diálogo. **Concluir** registra o encontro; **Esc/Fechar** cancela e permite tentar novamente. Conversas pausam movimento/relógio e não dão presença acadêmica. Nome, aparência, biografia e falas finais continuam **[PENDENTE]**.
 
@@ -14,7 +24,7 @@ Datas de conclusão persistem no bloco opcional `classmate` do **esquema 3**. Sa
 
 ## Professor e primeira aula — P2-04 preservada
 
-Professor de História placeholder na sala, com conversa de orientação e apresentação em quatro falas na primeira aula frequentada. Nome, aparência e biografia continuam **[PENDENTE]**. E perto dele abre a conversa; E no ponto de aula ou J abre a agenda. Escolha **Participar** durante um turno: a apresentação congela o relógio e, ao concluir a última fala com E/Enter/Continuar, avança até o fim do turno e registra presença. **Esc/Fechar cancela** e volta à agenda sem tempo gasto nem presença; pode tentar novamente.
+Professor de História placeholder na sala, com conversa de orientação e apresentação em quatro falas na primeira aula frequentada. Nome, aparência e biografia continuam **[PENDENTE]**. E perto dele abre a conversa; E no ponto de aula ou J abre a agenda. Escolha **Participar** durante um turno: a apresentação congela o relógio. Concluir a última fala com E/Enter/Continuar avança até o fim da manhã e registra presença; na primeira tarde, continua para a pergunta da P2-06 antes de concluir a aula. **Esc/Fechar cancela** e volta à agenda sem tempo gasto nem presença; pode tentar novamente.
 
 A apresentação ocorre uma única vez por partida salva. Se perder a manhã ou o primeiro dia, aparece na primeira aula elegível que frequentar; faltas anteriores são preservadas. O save continua no **esquema 3**, com flag opcional de conclusão. Saves anteriores sem a flag iniciam com a apresentação pendente, sem mudar posição/frequência. Auto, quando habilitado, grava presença e conclusão juntos após a aula. Carregar um manual anterior restaura a apresentação pendente.
 
@@ -40,6 +50,7 @@ Importe `project.godot` na Godot 4.7 e pressione **F5**. Use a janela separada d
 | J | Consultar agenda; participar/esperar somente na sala |
 | Esc | Fechar painel; sono obrigatório não pode ser cancelado |
 | E / Enter no diálogo | Avançar conversa |
+| 1–4 / mouse na pergunta | Escolher alternativa; Enter fecha a reação |
 | T | Comparar mobília 32/64; reposiciona e reinicia medição |
 | F | Mostrar/ocultar quadro e colisão dos pés |
 | R / botão | Atividade provisória de 60 minutos |
@@ -61,6 +72,8 @@ Importe `project.godot` na Godot 4.7 e pressione **F5**. Use a janela separada d
 - `scripts/core/academic_schedule.gd` / `scripts/ui/academic_panel.gd`: agenda, eventos, frequência e flag de apresentação.
 - `data/dialogues/professor_*.tres`: falas por chaves; `DialoguePanel.finished` distingue conclusão de cancelamento, integrado pelo controlador do laboratório.
 - `data/npcs/classmate.json` / `data/dialogues/classmate_*.tres`: horários, posições e diálogos da colega. `ClassmateEncounter` separa disponibilidade pelo relógio dos encontros efetivamente presenciados.
+- `data/questions/history.json` / `scripts/core/class_question_bank.gd`: questões com IDs estáveis, quatro opções, gabarito, reação, explicação e fonte. Não reutilize IDs para outra pergunta/alternativa; reinicie após editar o banco.
+- `scripts/ui/class_question_panel.gd`: escolhas/reação; `AcademicSchedule.question_answers` guarda o resultado, validado junto das presenças pelo save existente.
 
 | Área | Dimensões |
 |---|---|
@@ -85,6 +98,7 @@ godot --headless --path . --script res://tests/city_university_test.gd
 godot --headless --path . --script res://tests/academic_schedule_test.gd
 godot --headless --path . --script res://tests/professor_intro_test.gd
 godot --headless --path . --script res://tests/classmate_encounter_test.gd
+godot --headless --path . --script res://tests/class_question_test.gd
 godot --headless --path . --script res://tests/scale_lab_test.gd
 godot --headless --path . --script res://tests/time_manager_test.gd
 godot --headless --path . --script res://tests/interior_time_test.gd
@@ -98,10 +112,10 @@ Nesta máquina, substitua `godot` por `& '.\.tools\godot-4.7.2\Godot_v4.7.2-stab
 
 Runner urbano: física de caminhada real, consulta de colisões nas vias, conectividade dos 22 locais, passagens alternativas, interiores e fade. Aceleração 6× somente no teste. Acrescente `-- --walk` para medir a ida na velocidade real. Para seis capturas, execute sem `--headless` e acrescente `-- --walk --capture`. A visão geral usa câmera de inspeção apenas no runner. `signposted_journey_test.gd` é alias da suíte urbana. Agenda: botões reais de espera/participação, eventos por minuto, faltas, férias, sono, debug e saves/migrações. Variante sem `--headless`, com `-- --capture`, grava a agenda.
 
-Validação da P2-05 em **15/10/2026**: **681 verificações, zero falhas** — 82 da colega (inclui duas capturas), 45 do professor, 57 acadêmicas, 227 urbanas e 270 de regressão. Godot **4.7.2** oficial; importação/editor sem erros. O runner da colega percorre sala → aula → hall com movimento/física e interação reais, além de testar cancelamento, datas, load, limites do almoço, dias sem aula e reencontro posterior. Execute sem `--headless`, com `-- --capture`, para reproduzir as duas capturas. Resultados e limites no último registro de [decisions.md](docs/decisions.md). Sem playtest humano.
+Validação da P2-06 em **15/10/2026**: **786 verificações, zero falhas** — 104 da pergunta (inclui quatro capturas), 80 da colega, 47 do professor, 58 acadêmicas, 227 urbanas e 270 de regressão. Godot **4.7.2** oficial; importação/editor sem erros. A nova suíte testa quatro alternativas por teclado, escolha por mouse, reações, bloqueio de ações, cancelamento, aula tardia, saves/rollback, manual real ao dormir, compatibilidade e dados inválidos. Execute o runner de questões sem `--headless`, com `-- --capture`, para reproduzir as quatro capturas, incluindo 960×540. Resultados e limites no último registro de [decisions.md](docs/decisions.md). Sem playtest humano.
 
 A medição da cidade na P2-03 permanece referência histórica: ida em velocidade normal de 42,360 s, +39 minutos, chegada 06:39, margem 141 minutos até 09h. Na P2-04 a circulação foi repetida com aceleração apenas de teste; não houve nova medição de parede em velocidade normal.
 
 ## Próximo passo
 
-**P2-06 — banco de questões e primeira pergunta**, com quatro alternativas, reação e registro da resposta. Não há avaliação, quiz, notas ou elenco completo nesta entrega. **[PENDENTE]** Tile definitivo, arte final, nomes/layout finais e consequências acadêmicas do atraso. Referência histórica de calendário inicial: primavera 1, ano 1, segunda-feira, 06h; origem semanal configurável. Sem energia/crafting. Drowned preservado.
+**P2-07 — eventos curtos de pai/irmã e música no quarto**, com descoberta dos hobbies previstos no GDD. Avaliações/seminários, notas finais e elenco completo continuam para etapas posteriores. **[PENDENTE]** Tile definitivo, arte final, nomes/layout finais e consequências acadêmicas do atraso. Referência histórica de calendário inicial: primavera 1, ano 1, segunda-feira, 06h; origem semanal configurável. Sem energia/crafting. Drowned preservado.

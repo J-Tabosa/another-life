@@ -11,6 +11,7 @@ var started_at: int
 var evaluated_until: int
 var present: Dictionary = {}
 var professor_intro_seen: bool = false
+var question_answers: Dictionary = {}
 var suspended: bool = false
 var _acting: bool = false
 
@@ -70,7 +71,12 @@ func wait_for_class() -> bool:
 	return not _acting and current_session().is_empty() and duration > 0 and clock.advance_minutes(duration)
 
 
-func attend() -> bool:
+func needs_question() -> bool:
+	var session := current_session()
+	return not session.is_empty() and session.id == "afternoon" and question_answers.is_empty()
+
+
+func attend(option_id: String = "") -> bool:
 	var session := current_session()
 	if _acting or session.is_empty():
 		return false
@@ -79,13 +85,23 @@ func attend() -> bool:
 	var duration := int(session.end) - now % 1440
 	if present.has(id) or not clock.can_advance_minutes(duration):
 		return false
+	var question := ClassQuestionBank.first() if needs_question() else {}
+	if needs_question():
+		if question.is_empty() or not ClassQuestionBank.has_option(question, option_id):
+			return false
+	elif not option_id.is_empty():
+		return false
 	_acting = true
 	# Reserve presence before minute events reach the end of this class.
 	# Arrival after the start is recorded; grading and penalties remain undecided.
 	present[id] = now
+	if not question.is_empty():
+		question_answers[question.id] = {"option_id": option_id, "correct": option_id == question.correct_option_id, "answered_at": now, "session_key": id}
 	var completed := clock.advance_minutes(duration)
 	if not completed:
 		present.erase(id)
+		if not question.is_empty():
+			question_answers.erase(question.id)
 	_acting = false
 	changed.emit()
 	return completed
@@ -111,7 +127,7 @@ func reconcile() -> void:
 
 
 func get_state() -> Dictionary:
-	return {"started_at": started_at, "evaluated_until": evaluated_until, "present": present.duplicate(), "professor_intro_seen": professor_intro_seen}
+	return {"started_at": started_at, "evaluated_until": evaluated_until, "present": present.duplicate(), "professor_intro_seen": professor_intro_seen, "question_answers": question_answers.duplicate(true)}
 
 
 func restore(state: Dictionary) -> void:
@@ -119,6 +135,7 @@ func restore(state: Dictionary) -> void:
 	evaluated_until = int(state.evaluated_until)
 	present = state.present.duplicate()
 	professor_intro_seen = state.get("professor_intro_seen", false)
+	question_answers = state.get("question_answers", {}).duplicate(true)
 	changed.emit()
 
 
@@ -139,5 +156,22 @@ static func valid_state(state: Dictionary, minutes: int, offset: int) -> bool:
 		var finish := 720 if parts[1] == "morning" else 1020
 		var joined: Variant = state.present[id]
 		if day < 0 or str(day) != parts[0] or not teaching_day(day, offset) or not SaveManager._whole(joined, maxi(day * 1440 + start, int(state.started_at)), day * 1440 + finish - 1) or day * 1440 + finish > int(state.evaluated_until):
+			return false
+	# Optional in schema 3: P2-03/04/05 saves have no question history yet.
+	var answers: Variant = state.get("question_answers", {})
+	if not answers is Dictionary or answers.size() > 1:
+		return false
+	var question := ClassQuestionBank.first()
+	for id in answers:
+		if question.is_empty() or id != question.id or not answers[id] is Dictionary:
+			return false
+		var answer: Dictionary = answers[id]
+		if not answer.get("option_id") is String or not ClassQuestionBank.has_option(question, answer.option_id) or not answer.get("correct") is bool:
+			return false
+		if answer.correct != (answer.option_id == question.correct_option_id) or not SaveManager._whole(answer.get("answered_at"), int(state.started_at), minutes):
+			return false
+		var answered_at := int(answer.answered_at)
+		var session_key := str(answered_at / 1440) + ":afternoon"
+		if not answer.get("session_key") is String or answer.session_key != session_key or not state.present.has(session_key) or state.present[session_key] != answered_at:
 			return false
 	return true

@@ -34,6 +34,9 @@ var _first_lesson_minutes: int = -1
 var classmate: ClassmateEncounter
 var _classmate_pending: StringName = &""
 var _classmate_minutes: int = -1
+var question_panel: ClassQuestionPanel
+var _question_minutes: int = -1
+var _question_intro_completed: bool = false
 @onready var player: CharacterBody2D = $Player
 @onready var time_manager: TimeManager = $TimeManager
 @onready var dialogue_panel: DialoguePanel = $HUD/DialoguePanel
@@ -65,6 +68,11 @@ func _ready() -> void:
 	academic_panel.visibility_updated.connect(_sync_controls)
 	academic_panel.attendance_requested.connect(_attend_class)
 	academic_panel.wait_requested.connect(_wait_for_class)
+	question_panel = ClassQuestionPanel.new()
+	$HUD.add_child(question_panel)
+	question_panel.visibility_updated.connect(_sync_controls)
+	question_panel.answer_requested.connect(_answer_class_question)
+	question_panel.dismissed.connect(_on_question_closed)
 	city_map = CityMapPanel.new()
 	$HUD.add_child(city_map)
 	city_map.visibility_updated.connect(_sync_controls)
@@ -211,6 +219,7 @@ func change_area(target: StringName, spawn: StringName) -> void:
 		return
 	first_lesson_pending = false
 	_classmate_pending = &""
+	_clear_question()
 	dialogue_panel.close()
 	if is_instance_valid(area):
 		$World.remove_child(area)
@@ -321,7 +330,7 @@ func _sync_controls() -> void:
 
 
 func _modal_open() -> bool:
-	return transitioning or first_lesson_pending or not _classmate_pending.is_empty() or dialogue_panel.active or sleep_manager.pending or (is_instance_valid(debug_panel) and debug_panel.visible) or (is_instance_valid(academic_panel) and academic_panel.visible) or (is_instance_valid(city_map) and city_map.visible)
+	return transitioning or first_lesson_pending or not _classmate_pending.is_empty() or dialogue_panel.active or sleep_manager.pending or (is_instance_valid(question_panel) and question_panel.visible) or (is_instance_valid(debug_panel) and debug_panel.visible) or (is_instance_valid(academic_panel) and academic_panel.visible) or (is_instance_valid(city_map) and city_map.visible)
 
 
 func _open_academics() -> void:
@@ -331,7 +340,7 @@ func _open_academics() -> void:
 
 
 func _academic_action_allowed() -> bool:
-	return area_id == &"classroom" and academic_panel.visible and not transitioning and not sleep_manager.pending and not dialogue_panel.active and not debug_panel.visible and not city_map.visible
+	return area_id == &"classroom" and academic_panel.visible and not transitioning and not sleep_manager.pending and not dialogue_panel.active and not question_panel.visible and not debug_panel.visible and not city_map.visible
 
 
 func _attend_class() -> void:
@@ -348,9 +357,7 @@ func _attend_class() -> void:
 			first_lesson_pending = false
 			_open_academics()
 		return
-	if academics.attend():
-		academic_panel.refresh()
-		_autosave()
+	_continue_lesson()
 
 
 func _on_lesson_dialogue_finished(was_completed: bool) -> void:
@@ -359,13 +366,56 @@ func _on_lesson_dialogue_finished(was_completed: bool) -> void:
 	first_lesson_pending = false
 	var can_finish := area_id == &"classroom" and not transitioning and not loading_slot and not sleep_manager.pending and time_manager.world_minutes == _first_lesson_minutes
 	_first_lesson_minutes = -1
-	if was_completed and can_finish and academics.attend():
-		academics.professor_intro_seen = true
-		_autosave()
-	if can_finish:
+	if was_completed and can_finish:
+		_continue_lesson(true)
+	elif can_finish:
 		_open_academics()
 	else:
 		_sync_controls()
+
+
+func _continue_lesson(introduced: bool = false) -> void:
+	if academics.needs_question():
+		var question := ClassQuestionBank.first()
+		if question.is_empty():
+			_open_academics()
+			return
+		_question_minutes = time_manager.world_minutes
+		_question_intro_completed = introduced
+		academic_panel.close()
+		question_panel.start(question)
+	elif academics.attend():
+		if introduced:
+			academics.professor_intro_seen = true
+		_autosave()
+		if not academic_panel.visible:
+			_open_academics()
+		academic_panel.refresh()
+
+
+func _answer_class_question(option_id: String) -> void:
+	if not question_panel.visible or question_panel.answered or area_id != &"classroom" or transitioning or loading_slot or sleep_manager.pending or time_manager.world_minutes != _question_minutes:
+		return
+	if academics.attend(option_id):
+		if _question_intro_completed:
+			academics.professor_intro_seen = true
+		question_panel.show_result(academics.question_answers[question_panel.question.id])
+		_autosave()
+		_sync_controls()
+
+
+func _on_question_closed() -> void:
+	_question_minutes = -1
+	_question_intro_completed = false
+	if area_id == &"classroom" and not transitioning and not loading_slot and not sleep_manager.pending:
+		_open_academics()
+
+
+func _clear_question() -> void:
+	_question_minutes = -1
+	_question_intro_completed = false
+	if is_instance_valid(question_panel):
+		question_panel.dismiss()
 
 
 func _wait_for_class() -> void:
@@ -381,7 +431,7 @@ func _open_debug() -> void:
 
 
 func debug_jump(minutes: int) -> bool:
-	if first_lesson_pending or not _classmate_pending.is_empty() or sleep_manager.pending or minutes < time_manager.world_minutes:
+	if first_lesson_pending or question_panel.visible or not _classmate_pending.is_empty() or sleep_manager.pending or minutes < time_manager.world_minutes:
 		return false
 	debug_panel.close()
 	journey.reset()
@@ -397,6 +447,7 @@ func debug_jump(minutes: int) -> bool:
 func _on_sleep_limit() -> void:
 	first_lesson_pending = false
 	_classmate_pending = &""
+	_clear_question()
 	dialogue_panel.close()
 	debug_panel.close()
 	academic_panel.close()
@@ -456,6 +507,7 @@ func _restore_state(state: Dictionary) -> void:
 	loading_slot = true
 	first_lesson_pending = false
 	_classmate_pending = &""
+	_clear_question()
 	dialogue_panel.close()
 	debug_panel.close()
 	academic_panel.close()

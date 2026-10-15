@@ -1,0 +1,20 @@
+{
+  "first_question_id": "history_ipiranga_year",
+  "questions": [
+    {
+      "id": "history_ipiranga_year",
+      "prompt_key": "QUESTION_IPIRANGA_PROMPT",
+      "options": [
+        {"id": "year_1500", "label_key": "QUESTION_YEAR_1500"},
+        {"id": "year_1822", "label_key": "QUESTION_YEAR_1822"},
+        {"id": "year_1889", "label_key": "QUESTION_YEAR_1889"},
+        {"id": "year_1930", "label_key": "QUESTION_YEAR_1930"}
+      ],
+      "correct_option_id": "year_1822",
+      "correct_reaction_key": "QUESTION_IPIRANGA_CORRECT",
+      "incorrect_reaction_key": "QUESTION_IPIRANGA_INCORRECT",
+      "explanation_key": "QUESTION_IPIRANGA_EXPLANATION",
+      "source_url": "https://bndigital.bn.gov.br/dossies/gramaticas-e-dicionarios-do-portugues/linha-do-tempo/sobre-as-efemerides/1822-independencia-do-brasil/"
+    }
+  ]
+}
