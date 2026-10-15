@@ -46,3 +46,13 @@ func refresh() -> void:
 		var date := "%d / %s · %d" % [previous % 30 + 1, tr(["SEASON_SPRING", "SEASON_SUMMER", "SEASON_AUTUMN", "SEASON_WINTER"][previous % 120 / 30]), previous / 120 + 1]
 		for session in schedule.sessions:
 			history.text += "\n" + date + " · " + tr(session.label) + ": " + tr("ACADEMIC_" + schedule.status(previous, session).to_upper())
+	if not schedule.question_answers.is_empty():
+		var question := ClassQuestionBank.first()
+		var record: Dictionary = schedule.question_answers[question.id]
+		var selected_key: String = ""
+		for option in question.options:
+			if option.id == record.option_id:
+				selected_key = option.label_key
+		var answered_day: int = int(record.answered_at) / 1440
+		var date := "%d / %s · %d" % [answered_day % 30 + 1, tr(["SEASON_SPRING", "SEASON_SUMMER", "SEASON_AUTUMN", "SEASON_WINTER"][answered_day % 120 / 30]), answered_day / 120 + 1]
+		history.text += "\n\n" + tr("QUESTION_HISTORY") + "\n" + date + " · " + tr("ACADEMIC_AFTERNOON") + "\n" + tr(question.prompt_key) + "\n" + tr("QUESTION_HISTORY_ANSWER") % [tr(selected_key), tr("QUESTION_RESULT_CORRECT" if record.correct else "QUESTION_RESULT_INCORRECT")]

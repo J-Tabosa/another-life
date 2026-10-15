@@ -541,3 +541,68 @@ Comando novo: `godot --headless --path . --script res://tests/classmate_encounte
 Identidade, personalidade/falas finais, rotina completa e arte da colega pendentes. A presença mínima usa horários fixos em dados, sem navegação entre áreas; não inclui refeição com duração/preço, seleção de prato, sistema geral de amizades ou diário social. Dois encontros amigáveis não afirmam romance nem revelam afinidade interna. Mapa, escala, sono, calendário, filtros, agenda/presenças e saves anteriores preservados. Drowned não foi acessado/modificado.
 
 Próxima tarefa: **P2-06 — banco de questões e primeira pergunta**, quatro alternativas, reação e registro da resposta.
+
+## 2026-10-15 — P2-06: primeira pergunta em aula
+
+### Escopo e comportamento
+
+Somente a P2-06 do roadmap. Banco mínimo reutilizável em `data/questions/history.json`: uma questão de História com quatro alternativas, IDs estáveis, gabarito, chaves de reação/explicação e fonte. `ClassQuestionBank` valida o formato e guarda uma cópia em memória; editar os dados requer reiniciar o jogo. Não reutilizar IDs para outros enunciados ou alternativas: o save referencia esses identificadores.
+
+Questão de teste: ano do episódio do Grito do Ipiranga, em 7 de setembro. Alternativas 1500, 1822, 1889 e 1930; correta 1822. A pergunta delimita um episódio, evitando tratar todo o processo de independência como um acontecimento instantâneo. Referência consultada: [Biblioteca Nacional — 1822: Independência do Brasil](https://bndigital.bn.gov.br/dossies/gramaticas-e-dicionarios-do-portugues/linha-do-tempo/sobre-as-efemerides/1822-independencia-do-brasil/). Formulação, falas e conteúdo da disciplina continuam provisórios, sem fixar a ementa final.
+
+**[HIPÓTESE TÉCNICA]** A primeira participação elegível à tarde apresenta a questão uma vez por partida salva. Perder a manhã ou um dia inteiro não elimina essa oportunidade. Não há questão pela manhã, após 17h, em fim de semana ou férias. Se a apresentação do professor ainda estiver pendente, ela vem primeiro e continua para a questão sem avançar o relógio. Cancelar nessa etapa não marca a apresentação como concluída; a tentativa pode ser retomada. As quatro alternativas não têm cronômetro: o seminário temporizado é um sistema posterior do GDD.
+
+Escolha por mouse ou 1–4. Movimento, relógio natural, atividades, mapa, agenda, portas e salto debug ficam bloqueados durante o painel. Antes de escolher, Esc/Cancelar volta à agenda sem avanço/presença/resposta. Escolher valida a alternativa e reserva o resultado/presença antes dos eventos cronológicos, avança apenas o restante da aula até 17h, mostra reação e permite fechar com Continuar/Enter/Esc. Depois de responder, todas as opções ficam desabilitadas; fechar a reação não desfaz nem repete o resultado. Acerto recebe incentivo; erro recebe correção gentil, sem punição extra nem alteração da presença. Ambos encerram a mesma aula.
+
+Registro em `academics.question_answers`, por ID da questão: `option_id`, `correct`, `answered_at` e `session_key`. A agenda J mostra data/estação/ano, turno, enunciado, escolha e resultado no final do histórico. Um acerto fica registrado como participação correta; pesos, recompensa numérica e fórmula de notas permanecem **[PENDENTE]**, conforme o GDD. Não há atributos ocultos, nota final, avaliação, seminário, sorteio de perguntas ou sistema de semestre antecipado.
+
+### Arquivos e persistência
+
+- `data/questions/history.json` e `scripts/core/class_question_bank.gd`: banco validado, IDs e fonte.
+- `scripts/ui/class_question_panel.gd`: quatro opções, teclado/mouse, reação e cancelamento.
+- `scripts/core/academic_schedule.gd`: exigência da resposta na primeira tarde, registro, presença e validação.
+- `scripts/lab/scale_lab.gd`: continuação professor → questão → resultado, autosave e limpeza ao carregar/trocar área/dormir.
+- `scripts/ui/academic_panel.gd`, `localization/lab.csv` e tradução gerada: consulta do resultado e textos por chaves. en/es completos continuam para a beta.
+- Runner novo `tests/class_question_test.gd`; suites de professor e agenda adaptadas à etapa adicional. README, AGENTS e referência da cidade atualizados.
+
+Esquema 3 preservado. `question_answers` é opcional para arquivos da P2-03/04/05; ausência equivale a nenhuma resposta, preservando posições, horários, apresentação, encontros e frequência. A questão será oferecida na próxima tarde elegível ainda não frequentada. Migrações dos esquemas 1/2 continuam inicializando apenas o histórico acadêmico necessário, sem escrever sobre os originais. O validador recusa ID desconhecido, alternativa inválida, gabarito adulterado, data fracionária/futura, turno errado e resposta que não corresponda ao instante de entrada de uma presença válida. Rejeição não sobrescreve o slot.
+
+Auto opcional grava o resultado e a frequência ao concluir a aula, antes de fechar a reação. Manual continua sendo oferecido antes do sono em arquivo separado; inclui a resposta. Carregar um save anterior restaura a elegibilidade daquele instante. Carregar durante o painel elimina a continuação pendente; não inventa resposta nem presença. Resposta incorreta também permanece final nas tardes seguintes. Alterar área internamente limpa o painel sem executar o retorno normal à agenda.
+
+### Validação executada
+
+Godot **4.7.2.stable.official.ed1daf0bf**. Importação/editor headless sem erros. Todos os runners usam `user://test_runs/`, sem tocar nos slots reais. Capturas renderizadas e inspecionadas em 1280×720 e 960×540. Sem playtest humano.
+
+| Runner | Verificações finais | Resultado |
+|---|---:|---|
+| Questão renderizada | 104 (inclui quatro capturas) | zero falhas |
+| Professor | 47 | zero falhas |
+| Agenda acadêmica | 58 | zero falhas |
+| Colega | 80 | zero falhas |
+| Cidade/universidade | 227 | zero falhas |
+| Escala/movimento | 60 | zero falhas |
+| Relógio | 41 | zero falhas |
+| Tempo em interiores | 42 | zero falhas |
+| Ações temporizadas | 34 | zero falhas |
+| Diálogo anterior | 30 | zero falhas |
+| Sono/save/calendário | 51 | zero falhas |
+| Resolução/percurso | 12 | zero falhas |
+| **Total sem somar variantes repetidas** | **786** | **zero falhas** |
+
+Questões: dados/chaves/fonte; banco inválido; clique real e todas as quatro teclas; Enter/eco não selecionam; cancelamento por mouse/Esc; relógio/fração pausados; bloqueio de ações; exatamente um evento de presença e todos os minutos restantes, incluindo chegada 16h59; acerto/erro com presença idêntica; callbacks/cliques repetidos não alteram resultado; registro visível na agenda; auto separado antes de fechar; rollback; load durante pergunta; manual pelo fluxo real antes de dormir e restauração da escolha errada; ausência do bloco em save antigo; dados corrompidos; cancelamento ao trocar área; primeira aula à tarde depois de perder a manhã/dia anterior; calendário sem aulas; alternativas, reação e Continuar visíveis em 960×540. A variante headless tem 100 verificações, todas incluídas nas 104 renderizadas; não somar novamente.
+
+Comando novo: `godot --headless --path . --script res://tests/class_question_test.gd`. Para quatro capturas, retirar `--headless` e acrescentar `-- --capture`. Captura usa [`RenderingServer.force_draw(false)`](https://docs.godotengine.org/en/4.7/classes/class_renderingserver.html#class-renderingserver-method-force-draw) no runner: a espera de um novo frame renderizado podia ficar suspensa quando a janela oculta não precisava redesenhar. O processo desse teste inicial foi encerrado, o runner corrigido e a versão final renderizada completou sem erros. Nenhuma mudança no renderizador do jogo.
+
+Logs locais em `test-results/p206-*.log`, ignorados pelo Git. A circulação da cidade foi repetida com aceleração de teste 6×; não é uma nova medição em velocidade normal.
+
+![Primeira pergunta](screenshots/class_question.png)
+
+![Correção gentil](screenshots/class_question_incorrect.png)
+
+![Reação em janela 960×540](screenshots/class_question_notebook.png)
+
+### Limites e próxima tarefa
+
+Banco contém uma questão de teste. Mais questões, ementa, nomes/arte finais do professor, pesos/notas e recompensas numéricas continuam **[PENDENTE]**. Escala, mapa, fade, colega/almoço, sono, calendário e saves anteriores preservados; Drowned não foi acessado/modificado.
+
+Próxima tarefa: **P2-07 — eventos curtos de pai/irmã e música no quarto**, com descoberta dos hobbies previstos no GDD.

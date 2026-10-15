@@ -1,4 +1,21 @@
 keys,pt_BR
+QUESTION_IPIRANGA_PROMPT,"O episódio do Grito do Ipiranga, em 7 de setembro, ocorreu em que ano?"
+QUESTION_YEAR_1500,1500
+QUESTION_YEAR_1822,1822
+QUESTION_YEAR_1889,1889
+QUESTION_YEAR_1930,1930
+QUESTION_IPIRANGA_CORRECT,"Isso mesmo: 1822! Boa participação. Vamos continuar a aula."
+QUESTION_IPIRANGA_INCORRECT,"Boa tentativa. O ano que procuramos é 1822. Vamos retomar esse contexto juntos."
+QUESTION_IPIRANGA_EXPLANATION,"O 7 de setembro de 1822 é um marco da Independência do Brasil; o processo envolveu acontecimentos em diferentes regiões."
+QUESTION_HINT,"Escolha com o mouse ou as teclas 1–4. Sem limite de tempo."
+QUESTION_CANCEL,Cancelar participação
+QUESTION_CONTINUE,Continuar · Enter
+QUESTION_SELECTED,→ Sua resposta: %s
+QUESTION_RECORDED,Resposta e presença registradas · aula concluída às 17h.
+QUESTION_HISTORY,Resposta em aula
+QUESTION_HISTORY_ANSWER,Você respondeu: %s · %s
+QUESTION_RESULT_CORRECT,Correta · 1 acerto registrado
+QUESTION_RESULT_INCORRECT,Incorreta · sem penalidade adicional
 LAB_TITLE,LAB — PLACEHOLDERS
 LAB_ROOM,Quarto
 LAB_STREET,Rua residencial de teste
