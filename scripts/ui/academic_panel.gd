@@ -14,6 +14,11 @@ var wait_button: Button
 func _ready() -> void:
 	panel_size = Vector2(660, 480)
 	super._ready()
+	var background := StyleBoxFlat.new()
+	background.bg_color = Color(0.09, 0.10, 0.12, 0.98)
+	for child in get_children():
+		if child is PanelContainer:
+			child.add_theme_stylebox_override("panel", background)
 	add_label("ACADEMIC_TITLE")
 	add_label("ACADEMIC_HOURS")
 	details = add_label("")
@@ -26,6 +31,7 @@ func _ready() -> void:
 
 func open() -> void:
 	refresh()
+	(box.get_parent().get_parent() as ScrollContainer).scroll_vertical = 0
 	super.open()
 
 
@@ -33,7 +39,11 @@ func refresh() -> void:
 	if not is_instance_valid(details):
 		return
 	var day: int = schedule.clock.world_minutes / 1440
-	details.text = tr("ACADEMIC_TODAY")
+	var today := TimeManager.day_info(day, schedule.clock.weekday_offset)
+	details.text = tr("ACADEMIC_TODAY") + " · " + tr(today.reason_key)
+	if not today.is_teaching_day:
+		var next := TimeManager.day_info(TimeManager.next_teaching_day(day + 1, schedule.clock.weekday_offset), schedule.clock.weekday_offset)
+		details.text += "\n" + tr("CALENDAR_RETURN") % (tr("CALENDAR_DATE") % [next.day, tr(TimeManager.SEASON_KEYS[next.season_index]), next.year, tr(TimeManager.WEEKDAY_KEYS[next.weekday])])
 	for session in schedule.sessions:
 		details.text += "\n" + tr(session.label) + ": " + tr("ACADEMIC_" + schedule.status(day, session).to_upper())
 	if not in_classroom:

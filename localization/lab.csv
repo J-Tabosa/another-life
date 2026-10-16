@@ -103,7 +103,18 @@ LOAD_FAILED,Arquivo ausente ou inválido. A partida atual foi preservada.
 LOAD_OK,Partida carregada.
 DEBUG_OPEN,C — Calendário / saves
 DEBUG_CALENDAR,Calendário de DEBUG
-DEBUG_JUMP_HINT,Escolha ano e estação; clique em um dia para saltar ao horário selecionado. O salto não simula eventos nem noites anteriores.
+CALENDAR_DATE,%d de %s · Ano %d · %s
+CALENDAR_TODAY,Hoje: %s · Semana %d · %s
+CALENDAR_RETURN,Próximo dia letivo: %s · 09h
+CALENDAR_LEGEND,A = dia letivo · F = férias · — = fim de semana. Férias: verão 1–7 e inverno 24–30. Hoje em azul; datas passadas só para consulta.
+CALENDAR_MARK_CLASS,A
+CALENDAR_MARK_VACATION,F
+CALENDAR_MARK_WEEKEND,—
+CALENDAR_SUMMER_BREAK,Férias de verão
+CALENDAR_WINTER_BREAK,Férias de inverno
+CALENDAR_WEEKEND,Fim de semana
+CALENDAR_TEACHING_DAY,Dia letivo
+DEBUG_JUMP_HINT,Escolha ano e estação; clique na data para avançar ao horário escolhido. Aulas perdidas viram faltas; o salto não encena noites ou encontros anteriores.
 DEBUG_YEAR,Ano
 DEBUG_NAME,Nome do protagonista (teste de persistência)
 DEBUG_AUTOSAVE,Autosave nas transições e ao acordar

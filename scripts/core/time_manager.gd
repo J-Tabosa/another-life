@@ -10,6 +10,13 @@ const MINUTES_PER_DAY: int = 1440
 const DAYS_PER_SEASON: int = 30
 const SEASONS_PER_YEAR: int = 4
 const DAYS_PER_YEAR: int = DAYS_PER_SEASON * SEASONS_PER_YEAR
+const DAYS_PER_WEEK: int = 7
+const SEASON_KEYS := ["SEASON_SPRING", "SEASON_SUMMER", "SEASON_AUTUMN", "SEASON_WINTER"]
+const WEEKDAY_KEYS := ["WEEKDAY_MON", "WEEKDAY_TUE", "WEEKDAY_WED", "WEEKDAY_THU", "WEEKDAY_FRI", "WEEKDAY_SAT", "WEEKDAY_SUN"]
+const VACATIONS := [
+	{"season": 1, "first": 1, "last": 7, "label": "CALENDAR_SUMMER_BREAK"},
+	{"season": 3, "first": 24, "last": 30, "label": "CALENDAR_WINTER_BREAK"},
+]
 const SECONDS_PER_GAME_MINUTE: float = 1.0
 const SLEEP_LIMIT_MINUTE: int = 4 * 60
 
@@ -107,8 +114,31 @@ static func calendar_at(minutes: int, offset: int = 0) -> Dictionary:
 		"year": absolute_day / DAYS_PER_YEAR + 1,
 		"season_index": (absolute_day % DAYS_PER_YEAR) / DAYS_PER_SEASON,
 		"day": absolute_day % DAYS_PER_SEASON + 1,
-		"weekday": (offset + absolute_day) % 7,
-		"week": (offset + absolute_day) / 7 + 1,
+		"weekday": (offset + absolute_day) % DAYS_PER_WEEK,
+		"week": (offset + absolute_day) / DAYS_PER_WEEK + 1,
 		"hour": minute_of_day / 60,
 		"minute": minute_of_day % 60,
 	}
+
+
+# Derived data only: queries never tick the clock or create attendance records.
+static func day_info(absolute_day: int, offset: int = 0) -> Dictionary:
+	var date := calendar_at(absolute_day * MINUTES_PER_DAY, offset)
+	date.absolute_day = absolute_day
+	date.vacation_key = ""
+	for vacation in VACATIONS:
+		if date.season_index == vacation.season and date.day >= vacation.first and date.day <= vacation.last:
+			date.vacation_key = vacation.label
+	date.is_weekend = date.weekday >= 5
+	date.is_teaching_day = not date.is_weekend and date.vacation_key.is_empty()
+	# A vacation that overlaps a weekend still belongs to the vacation interval.
+	date.reason_key = date.vacation_key if not date.vacation_key.is_empty() else ("CALENDAR_WEEKEND" if date.is_weekend else "CALENDAR_TEACHING_DAY")
+	return date
+
+
+# Inclusive search, including weekends immediately after the vacation ends.
+static func next_teaching_day(from_day: int, offset: int = 0) -> int:
+	var day := from_day
+	while not day_info(day, offset).is_teaching_day:
+		day += 1
+	return day
