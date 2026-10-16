@@ -97,14 +97,18 @@ func _advance_clock(duration_minutes: int, sleeping: bool = false) -> void:
 
 
 func get_calendar() -> Dictionary:
-	var absolute_day: int = _world_minutes / MINUTES_PER_DAY
-	var minute_of_day: int = _world_minutes % MINUTES_PER_DAY
+	return calendar_at(_world_minutes, weekday_offset)
+
+
+static func calendar_at(minutes: int, offset: int = 0) -> Dictionary:
+	var absolute_day: int = minutes / MINUTES_PER_DAY
+	var minute_of_day: int = minutes % MINUTES_PER_DAY
 	return {
 		"year": absolute_day / DAYS_PER_YEAR + 1,
 		"season_index": (absolute_day % DAYS_PER_YEAR) / DAYS_PER_SEASON,
 		"day": absolute_day % DAYS_PER_SEASON + 1,
-		"weekday": (weekday_offset + absolute_day) % 7,
-		"week": (weekday_offset + absolute_day) / 7 + 1,
+		"weekday": (offset + absolute_day) % 7,
+		"week": (offset + absolute_day) / 7 + 1,
 		"hour": minute_of_day / 60,
 		"minute": minute_of_day % 60,
 	}

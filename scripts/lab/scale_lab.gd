@@ -108,7 +108,7 @@ func _ready() -> void:
 	debug_panel.jump_requested.connect(debug_jump)
 	debug_panel.load_requested.connect(load_slot)
 	debug_panel.autosave_changed.connect(_set_autosave)
-	debug_panel.name_changed.connect(func(value: String) -> void: protagonist_name = value)
+	debug_panel.name_changed.connect(_set_protagonist_name)
 	$HUD/DebugButton.text = tr("DEBUG_OPEN")
 	$HUD/DebugButton.pressed.connect(_open_debug)
 	$HUD/FullscreenButton.text = tr("FULLSCREEN_TOGGLE")
@@ -128,7 +128,13 @@ func _ready() -> void:
 	dialogue_panel.finished.connect(_on_home_dialogue_finished)
 	get_viewport().size_changed.connect(_layout_hud)
 	_layout_hud()
+	_set_protagonist_name(protagonist_name)
 	change_area(&"room", &"start")
+
+
+func _set_protagonist_name(value: String) -> void:
+	protagonist_name = value
+	dialogue_panel.text_context = {"player_name": value, "player_salutation": "" if value.strip_edges().is_empty() else ", " + value}
 
 
 func _setup_inputs() -> void:
@@ -548,6 +554,8 @@ func _show_sleep() -> void:
 
 
 func _choose_sleep(manual_save: bool) -> void:
+	if not sleep_manager.pending or transitioning:
+		return
 	if manual_save and not save_manager.save_slot("manual", snapshot()):
 		sleep_panel.status.text = tr("SAVE_FAILED")
 		return
@@ -600,7 +608,7 @@ func _restore_state(state: Dictionary) -> void:
 	city_map.close()
 	hobbies_panel.close()
 	tile_size = int(state.lab.tile_size)
-	protagonist_name = state.player.name
+	_set_protagonist_name(state.player.name)
 	academics.suspended = true
 	classmate.suspended = true
 	home_introductions.suspended = true

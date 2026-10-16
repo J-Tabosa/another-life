@@ -147,7 +147,7 @@ func run() -> void:
 	check(not dialogue.active and home.greetings.is_empty(), "remote or missing home actor cannot start conversation")
 	check(await walk_to(lab.area.get_node("Father").position), "father physically reachable from initial spawn")
 	await key(KEY_E)
-	check(dialogue.active and dialogue.get_node("Panel/Line").text == tr("FATHER_GREETING_01"), "nearby E opens father morning greeting")
+	check(dialogue.active and dialogue.get_node("Panel/Line").text == tr("FATHER_GREETING_01").format({"player_salutation": ""}), "nearby E opens father morning greeting")
 	var start: Vector2 = lab.player.position
 	clock._process(300)
 	await key(KEY_R)
@@ -158,7 +158,7 @@ func run() -> void:
 	check(clock.world_minutes == 360 and lab.player.position == start and lab.area_id == &"room" and not panel.visible and not lab.city_map.visible, "home dialogue blocks activities movement maps interests and doors")
 	check(not lab.debug_jump(1020), "calendar cannot skip a pending home event")
 	await key(KEY_E, true)
-	check(dialogue.get_node("Panel/Line").text == tr("FATHER_GREETING_01"), "held E does not skip home dialogue")
+	check(dialogue.get_node("Panel/Line").text == tr("FATHER_GREETING_01").format({"player_salutation": ""}), "held E does not skip home dialogue")
 	await key(KEY_ESCAPE)
 	check(home.greetings.is_empty() and home.discovered.is_empty() and not dialogue.active, "cancelled greeting records nothing")
 	await key(KEY_E)

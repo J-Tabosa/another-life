@@ -679,3 +679,67 @@ Runner novo: `godot --headless --path . --script res://tests/home_introductions_
 Nomes, arte, falas finais, instrumento e rotinas familiares completas continuam **[PENDENTE]**. Esta entrega cobre introdução/descoberta; nenhum hobby já possui minigame/prática funcional. Mapa, escala, aulas/questão, colega/almoço, sono, calendário e saves anteriores preservados. Drowned não foi acessado/modificado.
 
 Próxima tarefa: **P2-08 — fluxo do fim do dia e teste completo do Dia 1**, percorrendo todas as apresentações e o sono/salvamento em uma partida contínua, incluindo desvios sem bloqueios.
+
+## 2026-10-16 — P2-08: encerramento e Dia 1 contínuo
+
+### Entrega e checkpoint
+
+Somente P2-08. O Dia 1 foi executado do começo ao fim em duas partidas novas, tiles 32/64: nome escolhido, cumprimentos familiares, caminhada até a Horizonte, aula da manhã, primeiro contato e almoço no hall, questão da tarde, volta a pé para casa, três hobbies, cama, save e manhã seguinte. Reiniciar a cena e carregar os arquivos reais preserva nome, posição, horário/alarme, apresentação, frequência, resposta, colega e hobbies. Nenhum teleporte, `change_area`, restauração de relógio ou salto debug é usado para vencer as rotas principais; horários avançam por caminhada exterior e pelas atividades/sono da interface.
+
+O checkpoint P2 está concluído nas rotas e desvios testados, sem afirmar que todas as combinações possíveis de entrada/hardware foram cobertas. Roteiro, matriz dos critérios do GDD e comandos em `docs/day_one_validation.md`. A partida continua livre: cancelar, faltar ou dormir sem concluir conteúdo não provoca bloqueio. F5 ainda inicia diretamente a cena de laboratório; nome é escolhido em C. Menu principal dedicado e conteúdo final continuam pendentes.
+
+### Ajustes de fluxo
+
+- `TimeManager.calendar_at(minutes, offset)` extrai a consulta pura da data; `get_calendar()` conserva os resultados anteriores. A previsão do sono usa essa função sem mover o relógio.
+- `SleepPanel` mostra dia, estação, ano e dia da semana do despertar, mais horário/duração. Texto informa que atividades não são obrigatórias. Fundo opaco e área 660×460 mantêm decisões legíveis em 960×540.
+- 1 salva manualmente e dorme; 2 dorme sem manual. Mouse continua disponível. Os atalhos só recebem input não consumido pela interface: digitar um número no alarme em foco não inicia o sono. Esc continua limitado ao sono voluntário.
+- `_choose_sleep` exige sono pendente e ausência de transição. Uma chamada repetida após acordar não regrava o manual com o estado posterior nem dorme novamente.
+- `DialoguePanel.text_context` formata chaves traduzíveis; nome e saudação são atualizados ao editar em C e ao carregar. O cumprimento do pai usa a saudação nomeada; nome vazio mantém um cumprimento natural, sem separador sobrando. Recursos anteriores continuam funcionando sem variáveis.
+
+Não há novo manager, sistema de recompensa, portão de conclusão, mudança no cânone/horários autorizados ou esquema novo de save. Manual continua antes do sono e auto opcional depois de acordar, em arquivos separados. O fluxo de falha existente foi exercitado com erro real de criação da pasta: estado e manual anterior preservados, possibilidade de prosseguir sem manual e tentativa posterior na mesma escolha funcionando.
+
+### Arquivos
+
+`scripts/core/time_manager.gd`, `scripts/ui/sleep_panel.gd`, `scripts/dialogue/dialogue_panel.gd`, `scripts/lab/scale_lab.gd`, `localization/lab.csv` e tradução gerada; runner novo `tests/day_one_flow_test.gd`; runners de diálogo/família adaptados ao texto parametrizado. README, AGENTS, referência da cidade e guia `docs/day_one_validation.md` atualizados. Quatro capturas próprias desta entrega.
+
+### Validação executada
+
+Godot **4.7.2.stable.official.ed1daf0bf**. Importação/editor final sem erros. Os runners usam somente `user://test_runs/`, sem ler/gravar slots reais. Interface renderizada e inspecionada em 1280×720 e 960×540. Sem playtest humano.
+
+| Runner | Verificações finais | Resultado |
+|---|---:|---|
+| Dia 1 contínuo renderizado | 141 (inclui quatro capturas) | zero falhas |
+| Família/hobbies | 109 | zero falhas |
+| Questão | 100 | zero falhas |
+| Professor | 47 | zero falhas |
+| Agenda acadêmica | 58 | zero falhas |
+| Colega | 80 | zero falhas |
+| Cidade/universidade | 227 | zero falhas |
+| Escala/movimento | 60 | zero falhas |
+| Relógio | 41 | zero falhas |
+| Tempo em interiores | 42 | zero falhas |
+| Ações temporizadas | 34 | zero falhas |
+| Diálogo anterior | 30 | zero falhas |
+| Sono/save/calendário | 51 | zero falhas |
+| Resolução/percurso | 12 | zero falhas |
+| **Total sem somar variantes repetidas** | **1032** | **zero falhas** |
+
+Os 137 checks da variante headless do Dia 1 estão incluídos nos 141 renderizados; não somar novamente. A primeira execução renderizada com `--walk` completou o primeiro Dia 1 em escala de tempo 1, incluindo ida e volta; o segundo usa 6×. Ida exterior: **41,548 segundos de parede**, chegada **06h40**, margem **140 minutos** até a aula. A cronometragem inclui interações/fades na rota. Essa execução precedeu o último check de digitação do alarme e tinha 140 checks com quatro capturas; está em `test-results/p208-normal-speed.log` e também não entra novamente no total. A versão final, com atalhos/alarme, foi renderizada com 6× nos dois trajetos, sem alterar velocidade ou zoom de produção.
+
+Desvios com fixtures explícitas: cancelar apresentação/almoço/questão/sono; dormir imediatamente sem apresentações/hobbies ou slots; recuperar a primeira aula/pergunta em tarde posterior, chegando atrasado e errando; 04h exterior com frame longo, volta com fade e despertar 12h no mesmo dia; sono em casa respeitando alarme; falha de gravação, opção de continuar e nova tentativa; load inválido sem mutação; callback repetido depois de acordar; alarme em foco e decisões alcançáveis em notebook. A falha de pasta é induzida colocando um arquivo no lugar do diretório pai: as mensagens `Could not create directory` nos logs desse trecho são esperadas e verificam a recuperação; não há erro de script nem falha de asserção.
+
+Comandos completos em `docs/day_one_validation.md`. Logs em `test-results/p208-*.log`, ignorados. A unidade E: deixou de estar disponível nesta sessão; o trabalho continuou em cópia isolada em C: a partir do commit publicado da P2-07, sem mexer na cópia inacessível. O binário 4.7.2 foi obtido novamente da [distribuição oficial](https://godotengine.org/download/archive/4.7.2-stable/) e conferido com SHA-512 do release. Nenhum arquivo de Drowned foi acessado/modificado.
+
+![Escolha de sono e data do despertar](screenshots/day_one_bed.png)
+
+![Manhã seguinte com controles liberados](screenshots/day_one_next_morning.png)
+
+![Gravação falhou e permite recuperação](screenshots/day_one_save_recovery.png)
+
+![Cama em notebook](screenshots/day_one_bed_notebook.png)
+
+### Limites e próxima tarefa
+
+Sem menu principal dedicado, arte/instrumento finais, prática musical, minigames, notas/recompensas ou rotinas completas. Permanecem as hipóteses de horários domésticos e calendário inicial. As rotas principais foram caminhadas; casos de limite usam fixtures claramente separadas. O GDD histórico não foi reescrito.
+
+Próxima tarefa: **P3-01 — calendário completo e férias**, começando pela auditoria do calendário/agenda existentes para evitar duplicação ou regressão.

@@ -6,6 +6,7 @@ signal closed
 signal finished(was_completed: bool)
 
 var active: bool = false
+var text_context: Dictionary = {"player_name": "", "player_salutation": ""}
 var _line_keys: PackedStringArray
 var _line_index: int = 0
 
@@ -74,7 +75,7 @@ func _finish(was_completed: bool) -> void:
 
 
 func _show_line() -> void:
-	$Panel/Line.text = tr(_line_keys[_line_index])
+	$Panel/Line.text = tr(_line_keys[_line_index]).format(text_context)
 
 
 func _unhandled_input(event: InputEvent) -> void:
