@@ -2,7 +2,15 @@
 
 Protótipo em **Godot 4.7 / GDScript**, validado na **4.7.2 oficial**. Cânone e roadmap no [GDD](docs/ANOTHER_LIFE_GDD_DIA0.md), instruções em [AGENTS.md](AGENTS.md) e [migração da engine](docs/godot_4_7_migration.md).
 
-## Entrega atual — P2-08
+## Entrega atual — P3-01
+
+Calendário e férias auditados: **4 estações de 30 dias, 120 dias por ano**, dias da semana e número da semana contínuos entre estações/anos. **Verão 1–7 e inverno 24–30** são férias corridas; a Horizonte funciona de segunda a sexta fora desses intervalos. O retorno considera fins de semana, inclusive na primavera do ano seguinte. A origem semanal continua configurável; segunda-feira no início é **hipótese técnica**, não decisão de cânone.
+
+**C** abre o calendário: **A** indica dia letivo, **F** férias e **—** fim de semana. Hoje aparece em azul, com data completa, semana e motivo da suspensão de aulas; o painel informa o próximo dia letivo. Passe o cursor sobre uma data para ver detalhes, inclusive férias coincidentes com sábado/domingo. Ano/estação permitem consultar datas passadas sem voltar o tempo; clicar numa data habilitada avança ao horário selecionado. **J** também explica férias/fim de semana e o retorno. Os painéis têm fundo legível e rolagem em 960×540.
+
+Regras derivadas centralizadas no `TimeManager`, reutilizadas pela agenda, rotina da colega e validação dos saves. Férias não geram presença nem falta. Consultar datas não altera horário, fração do relógio ou progresso. Manual/auto, esquema 3 e migrações anteriores preservados. Validação: **590 verificações aprovadas**, incluindo **223** do calendário renderizado e as regressões de relógio, agenda, sono/save, colega e Dia 1 completo. [Regras, testes e limites](docs/calendar_validation.md).
+
+## Dia 1 — P2-08 preservada
 
 Dia 1 validado em partidas contínuas, de **06h em casa até a manhã seguinte**: cumprimentos familiares, caminhada até a Horizonte, aula da manhã, colega e almoço, questão à tarde, volta para casa, descoberta dos três hobbies e sono/salvamento. Dois percursos com física e portas reais, tiles 32/64, resposta correta/incorreta e auto ligado/desligado. [Roteiro, critérios e comandos](docs/day_one_validation.md).
 
@@ -127,6 +135,7 @@ godot --headless --path . --script res://tests/home_introductions_test.gd
 godot --headless --path . --script res://tests/day_one_flow_test.gd
 godot --headless --path . --script res://tests/scale_lab_test.gd
 godot --headless --path . --script res://tests/time_manager_test.gd
+godot --headless --path . --script res://tests/calendar_vacations_test.gd
 godot --headless --path . --script res://tests/interior_time_test.gd
 godot --headless --path . --script res://tests/timed_action_test.gd
 godot --headless --path . --script res://tests/dialogue_test.gd
@@ -144,4 +153,4 @@ A medição da cidade na P2-03 permanece referência histórica: ida em velocida
 
 ## Próximo passo
 
-**Checkpoint P2 concluído nas rotas testadas. Próxima tarefa: P3-01 — calendário completo e férias**, revisando o calendário de 120 dias e as regras já implementadas. Minigames, avaliações/seminários, notas finais e elenco completo continuam para etapas posteriores. **[PENDENTE]** Tile definitivo, instrumento musical, arte final, nomes/layout finais e consequências acadêmicas do atraso. Referência histórica de calendário inicial: primavera 1, ano 1, segunda-feira, 06h; origem semanal configurável. Sem energia/crafting. Drowned preservado.
+**P3-01 concluída. Próxima tarefa: P3-02 — mesada semanal e saldo inicial de 100**. Valor da mesada e nome/símbolo da moeda continuam **[PENDENTE]**, a resolver nessa tarefa. Minigames, avaliações/seminários, notas finais e elenco completo continuam para etapas posteriores. **[PENDENTE]** Tile definitivo, instrumento musical, arte final, nomes/layout finais e consequências acadêmicas do atraso. Referência histórica de calendário inicial: primavera 1, ano 1, segunda-feira, 06h; origem semanal configurável. Sem energia/crafting. Drowned preservado.

@@ -25,9 +25,7 @@ func _ready() -> void:
 
 
 static func teaching_day(day: int, offset: int) -> bool:
-	var season: int = day % 120 / 30
-	var date := day % 30 + 1
-	return (day + offset) % 7 < 5 and not (season == 1 and date <= 7) and not (season == 3 and date >= 24)
+	return TimeManager.day_info(day, offset).is_teaching_day
 
 
 func key(day: int, session: Dictionary) -> String:

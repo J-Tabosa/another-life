@@ -743,3 +743,46 @@ Comandos completos em `docs/day_one_validation.md`. Logs em `test-results/p208-*
 Sem menu principal dedicado, arte/instrumento finais, prática musical, minigames, notas/recompensas ou rotinas completas. Permanecem as hipóteses de horários domésticos e calendário inicial. As rotas principais foram caminhadas; casos de limite usam fixtures claramente separadas. O GDD histórico não foi reescrito.
 
 Próxima tarefa: **P3-01 — calendário completo e férias**, começando pela auditoria do calendário/agenda existentes para evitar duplicação ou regressão.
+
+## 2026-10-16 — P3-01: calendário e férias auditados
+
+### Escopo e regras existentes
+
+Somente P3-01. A contagem absoluta, 120 dias/ano, quatro estações de 30 dias, continuidade semanal e bloqueio de aulas nas férias já estavam implementados. A auditoria preservou esses resultados e o contrato de `TimeManager.calendar_at`; a definição de dia letivo saiu dos cálculos locais da agenda para uma consulta central reutilizável. O GDD histórico permanece intacto.
+
+Férias canônicas: verão 1–7 e inverno 24–30, inclusive, sete dias corridos em cada intervalo. Aulas somente de segunda a sexta fora das férias. Fins de semana coincidentes continuam dentro das férias, sem estender o intervalo; a retomada ocorre no próximo dia útil, inclusive na primavera de outro ano. Dia da semana e número da semana continuam a contagem entre estações/anos. Segunda-feira na origem do ano 1 permanece **[HIPÓTESE TÉCNICA]**, configurável por `weekday_offset`, sem promover essa escolha a cânone. Os turnos 09h–12h/13h–17h continuam os autorizados nesta etapa.
+
+### Mudanças
+
+- `scripts/core/time_manager.gd`: constantes de estação/semana/férias, `day_info(absolute_day, offset)` com motivo e disponibilidade acadêmica, busca inclusiva `next_teaching_day`. São consultas puras; não emitem eventos, movem relógio ou criam conhecimento/participação.
+- `scripts/core/academic_schedule.gd`: API anterior de `teaching_day` delega ao calendário. A rotina mínima da colega e validação dos saves já passam por essa mesma API, portanto não divergem nas férias.
+- `scripts/ui/calendar_debug_panel.gd`: A/F/— com legenda; detalhes da data/dia da semana em tooltip; sobreposição férias/fim de semana explícita; hoje, semana, motivo e retorno. Consulta de passado/futuro preserva estado; salto só para frente. Horas/minutos identificados. `scripts/ui/academic_panel.gd` informa motivo e retorno. Fundo opaco e reabertura no topo em ambos para leitura em notebook.
+- `localization/lab.csv` e tradução gerada: chaves traduzíveis, pt_BR nesta etapa. `tests/calendar_vacations_test.gd` e UID; três capturas. README, AGENTS, referência da cidade e `docs/calendar_validation.md` atualizados.
+
+Sem outro manager, flag de férias persistida, novo esquema ou migração. Manual/auto separados e origem semanal continuam os mesmos dados. Férias/fins de semana não geram faltas, e snapshots com presenças/encontros acadêmicos fabricados nessas datas são recusados. Calendário debug continua sem encenar noites/eventos intermediários; reconciliação acadêmica é compacta e derivada. Nenhum sistema econômico, novo feriado/festival, semestre ou calendário pessoal foi antecipado.
+
+### Validação executada
+
+Godot **4.7.2.stable.official.ed1daf0bf**, na pasta original E: reconectada. Importação/editor sem erros de script. Somente arquivos isolados `user://test_runs/`. Sem playtest humano.
+
+| Runner | Verificações finais | Resultado |
+|---|---:|---|
+| Calendário/férias renderizado | 223, incluindo três capturas | zero falhas |
+| Relógio | 41 | zero falhas |
+| Agenda acadêmica | 58 | zero falhas |
+| Sono/save/calendário anterior | 51 | zero falhas |
+| Colega | 80 | zero falhas |
+| Dia 1 contínuo | 137 | zero falhas |
+| **Total sem somar variantes/repetições** | **590** | **zero falhas** |
+
+O runner de calendário sem capturas tem 220 verificações incluídas nas 223; as iterações de desenvolvimento não entram novamente no total. Com contadores independentes, são conferidas 5.880 datas: 840 dias (7 anos, ciclo completo de alinhamento ano/semana) para cada uma das 7 origens. Resultados diários agrupados por ano/origem em asserções, não contados como 5.880 checks individuais. Exatamente 14 dias de férias/ano; retornos com fim de semana, 28 grids do ano 2, consulta do ano 9999, limites de estação/ano com sinais cronológicos e sem mutação por consulta.
+
+Integração com entrada real de mouse: consulta, clique em data, ausência de rotina da colega nas férias, agenda explicativa, primeira apresentação e aula após férias, presença normal, falta anterior distinta de `no_class`, manual real e load com fade, rejeição de registros inválidos, sono no fim do inverno e no começo do verão, auto após despertar nas férias e load independente sem alterar manual, notebook/rolagem e fração exterior ao fechar. Fixtures de relógio do runner de calendário não são apresentadas como caminhada. O runner do Dia 1 repete as duas partidas caminhadas em tiles 32/64, sem teleporte para completar os trajetos. Os erros de criação de diretório nessa suíte são injetados no cenário de falha de gravação e esperados; não há erro de script nem falha de asserção nas execuções finais. Logs `test-results/p301-*.log`, ignorados.
+
+Comandos, capturas e matriz em `docs/calendar_validation.md`.
+
+### Limites e próxima tarefa
+
+Consulta ainda no painel C, sem celular/calendário pessoal ou compromissos futuros não descobertos. Interface/conteúdo finais e traduções en/es permanecem pendentes. Nenhuma alteração no mapa, zoom, movimento, 04h ou política de saves. Drowned não foi acessado/modificado.
+
+Próxima tarefa: **P3-02 — mesada semanal e saldo inicial de 100**. Nome/símbolo da moeda, valor e horário/dia do pagamento permanecem **[PENDENTE]** para essa etapa; não foram fixados silenciosamente.
