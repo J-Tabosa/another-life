@@ -8,7 +8,7 @@ MUSIC_MARKER,Música · PLACEHOLDER
 FATHER_TALK,E — conversar com o pai
 SISTER_TALK,E — conversar com a irmã
 MUSIC_EXAMINE,E — conhecer o cantinho de música
-FATHER_GREETING_01,Bom dia! Como está se sentindo com a universidade? Estou torcendo por você.
+FATHER_GREETING_01,Bom dia{player_salutation}! Estou torcendo por você.
 FATHER_GREETING_02,Mais tarde podemos conversar com calma. Também quero conhecer melhor esta cidade.
 FATHER_WAITING_01,Tenha um bom dia. A gente se encontra em casa mais tarde!
 FATHER_SKATE_01,Vi um pessoal andando de skate pela cidade. Fiquei com vontade de tentar também.
@@ -92,8 +92,10 @@ SLEEP_TITLE,Dormir
 SLEEP_FORCED,04h — Acho que já deu por hoje...
 SLEEP_ALARM,Despertador (hora e minuto)
 SLEEP_WAKE,Acordar às %02d:%02d · %.2f horas de sono
-SLEEP_SAVE,Salvar manualmente e dormir
-SLEEP_SKIP,Dormir sem salvar manualmente
+SLEEP_WAKE_DATE,%d de %s · Ano %d · %s
+SLEEP_OPTIONAL_ACTIVITIES,Você pode dormir sem concluir todas as atividades.
+SLEEP_SAVE,1 — Salvar manualmente e dormir
+SLEEP_SKIP,2 — Dormir sem salvar manualmente
 SLEEP_CANCEL,Cancelar
 SLEEP_RESULT,Dormiu %d minutos. Confira a hora no rodapé.
 SAVE_FAILED,Falha ao salvar. Você pode tentar novamente ou dormir sem salvar.

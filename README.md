@@ -2,7 +2,15 @@
 
 Protótipo em **Godot 4.7 / GDScript**, validado na **4.7.2 oficial**. Cânone e roadmap no [GDD](docs/ANOTHER_LIFE_GDD_DIA0.md), instruções em [AGENTS.md](AGENTS.md) e [migração da engine](docs/godot_4_7_migration.md).
 
-## Entrega atual — P2-07
+## Entrega atual — P2-08
+
+Dia 1 validado em partidas contínuas, de **06h em casa até a manhã seguinte**: cumprimentos familiares, caminhada até a Horizonte, aula da manhã, colega e almoço, questão à tarde, volta para casa, descoberta dos três hobbies e sono/salvamento. Dois percursos com física e portas reais, tiles 32/64, resposta correta/incorreta e auto ligado/desligado. [Roteiro, critérios e comandos](docs/day_one_validation.md).
+
+A cama agora mostra **data, estação, ano e dia da semana do despertar**, além de horário/duração. **1** salva manualmente e dorme; **2** dorme sem manual; o mouse continua disponível. Digitar no alarme não aciona os atalhos de sono. Esc cancela o sono voluntário. Conversas usam contexto traduzível para o nome escolhido em C, preservado ao carregar. Uma chamada repetida de salvar após acordar não substitui o manual anterior.
+
+É permitido dormir sem concluir o roteiro. Foram testados cancelamentos, dia inteiro perdido e retomada posterior, sono obrigatório às 04h, gravação falhando com recuperação e load inválido sem perda do estado atual. O manual continua anterior ao sono; o auto opcional é separado e captura o despertar. [Validação detalhada](docs/day_one_validation.md).
+
+## Família e hobbies — P2-07 preservada
 
 Pai e irmã placeholders agora têm **cumprimentos de manhã e eventos distintos de apresentação dos hobbies à noite**. No mesmo interior de teste da casa/quarto, converse com E: pai apresenta **skate**, irmã apresenta **fliperama e videogames**; o quadrado roxo do cantinho de música permite descobrir **música**. Concluir a última fala registra a descoberta. **Esc/Fechar cancela** sem registrar; repetir após concluir usa uma fala curta, sem duplicar eventos. Conversas não gastam minutos nem concedem presença acadêmica.
 
@@ -62,6 +70,7 @@ Importe `project.godot` na Godot 4.7 e pressione **F5**. Use a janela separada d
 | Esc | Fechar painel; sono obrigatório não pode ser cancelado |
 | E / Enter no diálogo | Avançar conversa |
 | 1–4 / mouse na pergunta | Escolher alternativa; Enter fecha a reação |
+| 1 / 2 na escolha de sono | Salvar e dormir / dormir sem manual; mouse também disponível |
 | T | Comparar mobília 32/64; reposiciona e reinicia medição |
 | F | Mostrar/ocultar quadro e colisão dos pés |
 | R / botão | Atividade provisória de 60 minutos |
@@ -115,6 +124,7 @@ godot --headless --path . --script res://tests/professor_intro_test.gd
 godot --headless --path . --script res://tests/classmate_encounter_test.gd
 godot --headless --path . --script res://tests/class_question_test.gd
 godot --headless --path . --script res://tests/home_introductions_test.gd
+godot --headless --path . --script res://tests/day_one_flow_test.gd
 godot --headless --path . --script res://tests/scale_lab_test.gd
 godot --headless --path . --script res://tests/time_manager_test.gd
 godot --headless --path . --script res://tests/interior_time_test.gd
@@ -128,10 +138,10 @@ Nesta máquina, substitua `godot` por `& '.\.tools\godot-4.7.2\Godot_v4.7.2-stab
 
 Runner urbano: física de caminhada real, consulta de colisões nas vias, conectividade dos 22 locais, passagens alternativas, interiores e fade. Aceleração 6× somente no teste. Acrescente `-- --walk` para medir a ida na velocidade real. Para seis capturas, execute sem `--headless` e acrescente `-- --walk --capture`. A visão geral usa câmera de inspeção apenas no runner. `signposted_journey_test.gd` é alias da suíte urbana. Agenda: botões reais de espera/participação, eventos por minuto, faltas, férias, sono, debug e saves/migrações. Variante sem `--headless`, com `-- --capture`, grava a agenda.
 
-Validação da P2-07 em **15/10/2026**: **896 verificações, zero falhas** — 114 domésticas (inclui cinco capturas), 100 da questão, 80 da colega, 47 do professor, 58 acadêmicas, 227 urbanas e 270 de regressão. Godot **4.7.2** oficial; importação/editor sem erros. A nova suíte verifica caminhada física até os três pontos em tiles 32/64, cumprimentos distintos dos hobbies, cancelamento/repetição, retomada posterior, relógio/fração, sono das 04h, manual real antes de dormir, auto separado, rollback, compatibilidade e dados inválidos. Execute o runner doméstico sem `--headless`, com `-- --capture`, para reproduzir as cinco capturas, incluindo 960×540. Resultados e limites no último registro de [decisions.md](docs/decisions.md). Sem playtest humano.
+Validação da P2-08 em **16/10/2026**: **1032 verificações, zero falhas** — 141 do fluxo completo (inclui quatro capturas), 109 domésticas, 100 da questão, 80 da colega, 47 do professor, 58 acadêmicas, 227 urbanas e 270 de regressão. Godot **4.7.2** oficial; importação/editor sem erros. As mensagens de erro de diretório na seção de falhas são provocadas intencionalmente para verificar recuperação de save, sem falha nas verificações. Execute o runner do Dia 1 sem `--headless`, com `-- --walk --capture`, para repetir o primeiro percurso em velocidade normal e gravar quatro capturas. Os demais percursos são acelerados somente no runner. [Critérios, comandos e limites](docs/day_one_validation.md); resultados completos no último registro de [decisions.md](docs/decisions.md). Sem playtest humano.
 
-A medição da cidade na P2-03 permanece referência histórica: ida em velocidade normal de 42,360 s, +39 minutos, chegada 06:39, margem 141 minutos até 09h. Na P2-04 a circulação foi repetida com aceleração apenas de teste; não houve nova medição de parede em velocidade normal.
+A medição da cidade na P2-03 permanece referência histórica: ida em velocidade normal de 42,360 s, +39 minutos, chegada 06:39, margem 141 minutos até 09h. Na P2-08, o primeiro Dia 1 inteiro também foi executado em velocidade normal: a ida exterior levou 41,548 s de parede, chegada 06:40 e margem 140 minutos até 09h, com interações/fades na rota. A validação final com atalhos de sono foi repetida com aceleração de teste; não somar execuções repetidas à contagem.
 
 ## Próximo passo
 
-**P2-08 — fluxo do fim do dia e teste completo**, percorrendo o Dia 1 do começo ao fim e verificando ausência de bloqueios. Minigames, avaliações/seminários, notas finais e elenco completo continuam para etapas posteriores. **[PENDENTE]** Tile definitivo, instrumento musical, arte final, nomes/layout finais e consequências acadêmicas do atraso. Referência histórica de calendário inicial: primavera 1, ano 1, segunda-feira, 06h; origem semanal configurável. Sem energia/crafting. Drowned preservado.
+**Checkpoint P2 concluído nas rotas testadas. Próxima tarefa: P3-01 — calendário completo e férias**, revisando o calendário de 120 dias e as regras já implementadas. Minigames, avaliações/seminários, notas finais e elenco completo continuam para etapas posteriores. **[PENDENTE]** Tile definitivo, instrumento musical, arte final, nomes/layout finais e consequências acadêmicas do atraso. Referência histórica de calendário inicial: primavera 1, ano 1, segunda-feira, 06h; origem semanal configurável. Sem energia/crafting. Drowned preservado.
